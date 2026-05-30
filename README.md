@@ -1,4 +1,4 @@
-docker run --name shopbud -e MYSQL_ROOT_PASSWORD=senha123 -p 3306:3306 -d mysql:8.0
+docker exec -it shopbud_mysql mysql -u root -p
 
 
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
