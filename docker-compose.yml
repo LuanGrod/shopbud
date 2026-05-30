@@ -1,21 +1,21 @@
 services:
   mysql:
-    image: mysql:8.0 
+    image: mysql:8.0
     container_name: shopbud_mysql
     restart: unless-stopped
-    ports: 
-      - "3306:3306"
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
     environment:
-      MYSQL_DATABASE: shopbud
-      MYSQL_ROOT_PASSWORD: senha123
-      MYSQL_USER: shopbud_user
-      MYSQL_PASSWORD: senha123
-    volumes: 
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-shopbud}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER:-shopbud_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
       - mysql_data:/var/lib/mysql
     networks:
       - shopbud_network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 5
