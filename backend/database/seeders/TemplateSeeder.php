@@ -13,6 +13,6 @@ class TemplateSeeder extends Seeder
      */
     public function run(): void
     {
-        Template::factory(10)->create(["user_id" => 1]);
+        Template::factory(50)->create(["user_id" => 1]);
     }
 }

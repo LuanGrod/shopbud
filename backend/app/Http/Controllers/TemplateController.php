@@ -14,7 +14,7 @@ class TemplateController extends Controller
      */
     public function index()
     {
-        return Template::all();
+        return Template::paginate(5);
     }
 
     /**
