@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Template;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class TemplateSeeder extends Seeder
@@ -13,6 +12,7 @@ class TemplateSeeder extends Seeder
      */
     public function run(): void
     {
-        Template::factory(50)->create(["user_id" => 1]);
+        Template::factory(20)->create(['user_id' => 1]);
+        Template::factory(20)->create();
     }
 }

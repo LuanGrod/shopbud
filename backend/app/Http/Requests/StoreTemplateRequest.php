@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Template;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -13,13 +15,13 @@ class StoreTemplateRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return $this->user()->can('create', Template::class);
     }
 
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -28,8 +30,8 @@ class StoreTemplateRequest extends FormRequest
                 'required',
                 'string',
                 'max:50',
-                Rule::unique('templates', 'name')->where('user_id', Auth::id())
-            ]
+                Rule::unique('templates', 'name')->where('user_id', Auth::id()),
+            ],
         ];
     }
 }

@@ -3,18 +3,28 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTemplateRequest;
+use App\Http\Requests\UpdateTemplateRequest;
+use App\Http\Resources\TemplateResource;
 use App\Models\Template;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class TemplateController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Template::paginate(5);
+        $perPage = (int) $request->get('per-page', 10);
+        $perPage = min(max($perPage, 1), 100);
+
+        $templates = $request->user()
+            ->templates()
+            ->withSearch($request)
+            ->withSort($request)
+            ->paginate($perPage);
+
+        return TemplateResource::collection($templates);
     }
 
     /**
@@ -22,9 +32,11 @@ class TemplateController extends Controller
      */
     public function store(StoreTemplateRequest $request)
     {
-        $validated = $request->validated();
+        $template = $request->user()->templates()->create(
+            $request->validated()
+        );
 
-        dd($validated);
+        return response()->json($template, 201);
     }
 
     /**
@@ -32,15 +44,19 @@ class TemplateController extends Controller
      */
     public function show(Template $template)
     {
-        return Template::all()->where("id", $template);
+        $this->authorize('view', $template);
+
+        return new TemplateResource($template);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Template $template)
+    public function update(UpdateTemplateRequest $request, Template $template)
     {
-        //
+        $template->update($request->validated());
+
+        return new TemplateResource($template);
     }
 
     /**
@@ -48,6 +64,10 @@ class TemplateController extends Controller
      */
     public function destroy(Template $template)
     {
-        //
+        $this->authorize('delete', $template);
+
+        $template->delete();
+
+        return response()->noContent();
     }
 }

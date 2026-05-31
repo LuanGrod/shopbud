@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -13,13 +14,13 @@ class UpdateTemplateRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return $this->user()->can('update', $this->template);
     }
 
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -27,10 +28,9 @@ class UpdateTemplateRequest extends FormRequest
             'name' => [
                 'required',
                 'string',
-                'max:255',
-                Rule::unique('templates', 'name')->where('user_id', Auth::id())->ignore($this->template)
+                'max:50',
+                Rule::unique('templates', 'name')->where('user_id', Auth::id())->ignore($this->template),
             ],
-            "user_id" => 'required|exists:users,id'
         ];
     }
 }

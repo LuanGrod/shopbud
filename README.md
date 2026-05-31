@@ -203,38 +203,6 @@ shopbud/
 | Fase 7 | PWA e Offline | ⚪ Não iniciado |
 | Fase 8 | Testes e Ajustes Finais | ⚪ Não iniciado |
 
-## Troubleshooting
-
-### Backend não conecta ao MySQL
-
-**Erro:** `SQLSTATE[HY000] [2002] Connection refused`
-
-**Solução:** Verifique se `DB_HOST=mysql` em `backend/.env`
-
-### Porta já em uso
-
-**Erro:** `bind: address already in use`
-
-**Solução:** Edite `.env` e altere as portas:
-```env
-MYSQL_PORT=3307
-BACKEND_PORT=8001
-FRONTEND_PORT=3001
-```
-
-### Container reiniciando em loop
-
-**Diagnóstico:**
-```bash
-docker compose logs backend
-```
-
-**Solução:**
-```bash
-docker compose down
-docker compose up -d --build
-```
-
 ## Contribuindo
 
 Contribuições são bem-vindas! Por favor, abra uma issue ou pull request.
@@ -242,7 +210,3 @@ Contribuições são bem-vindas! Por favor, abra uma issue ou pull request.
 ## Licença
 
 MIT
-
----
-
-**Desenvolvido com 💜 para facilitar suas compras de supermercado**
