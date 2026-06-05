@@ -16,6 +16,6 @@ Pessoas que fazem compras de supermercado regularmente e buscam mais organizaç�
 
 - Organização por setores na ordem real do supermercado
 - Visibilidade clara do gasto parcial e total durante a compra
-- Templates reutilizáveis para diferentes contextos (compra mensal, festa, etc.)
+- Templates reutilizáveis para supermercados específicos, seguindo a ordem real dos corredores
 - Funciona offline para uso dentro do supermercado
 - Interface simples, sem funcionalidades desnecessárias

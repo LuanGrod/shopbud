@@ -29,8 +29,7 @@ Backend:
 - Configuração do banco de dados MySQL
 - Modelagem e migrations (User)
 - Configuração do Laravel Sanctum
-- Endpoints de autenticação (register, login, logout, forgot-password)
-- Integração OAuth Google com Socialite
+- Endpoints de autenticação (register, login, logout)
 
 Frontend:
 
@@ -38,7 +37,7 @@ Frontend:
 - Configuração do Tailwind CSS
 - Estrutura de pastas e organização
 - Contexto de autenticação
-- Telas: Splash, Login, Cadastro, Recuperar Senha
+- Telas: Splash, Login, Cadastro
 - Integração com API de autenticação
 - Armazenamento do token
 
@@ -56,19 +55,21 @@ Backend:
 - Models e relacionamentos Eloquent
 - Endpoints de templates (CRUD)
 - Endpoints de setores (CRUD + reordenação)
-- Endpoints de produtos (CRUD + reordenação)
+- Endpoints de produtos (CRUD)
+- Endpoint de reordenação de setores com normalização da ordem
 - Validações e Form Requests
 
 Frontend:
 
 - Tela Home (lista de templates)
 - Tela Criar/Editar Template
-- Tela Editar Setor
+- Tela Gerenciar Setores do Template
+- Tela Gerenciar Produtos do Setor
 - Componentes: Card de Template, Card de Setor, Card de Produto
-- Funcionalidade de drag-and-drop para reordenação
+- Funcionalidade de drag-and-drop para reordenação de setores
 - Integração com API
 
-Entregável: Usuário consegue criar templates completos com setores e produtos ordenados.
+Entregável: Usuário consegue criar templates completos com setores ordenados e produtos por setor.
 
 ---
 
@@ -80,9 +81,11 @@ Backend:
 
 - Migrations (ShoppingSession, ShoppingItem)
 - Endpoints de sessão (start, current, finish, cancel)
-- Endpoints de items (adicionar, editar, remover)
-- Lógica de cópia do template para sessão (snapshot)
-- Cálculo de subtotais e total
+- Lógica de cópia dos setores e produtos do template para sessão (snapshot)
+- Garantia de que produtos avulsos alteram apenas a sessão atual
+- Regra de expiração/cancelamento de sessões active após 24 horas
+- Persistência de ShoppingItems apenas na finalização da sessão
+- Cálculo oficial de subtotais e total no backend ao finalizar
 
 Frontend:
 
@@ -182,13 +185,14 @@ Frontend:
 Backend:
 
 - Endpoint de sincronização em batch (/api/sync)
-- Lógica de resolução de conflitos
+- Lógica de sincronização de operações pendentes de alto nível, especialmente finish_session
+- Rejeição de finalizações pendentes para sessões expiradas ou canceladas
 
 Testes:
 
 - Testar fluxo completo de compra offline
-- Testar sincronização ao reconectar
-- Testar conflitos de dados
+- Testar sincronização de finalização ao reconectar
+- Testar rejeição de finalização expirada
 
 Entregável: Usuário consegue usar o app sem internet e dados sincronizam automaticamente.
 

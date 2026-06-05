@@ -188,7 +188,7 @@ shopbud/
 ## Documentação
 
 - [Docker Setup](docs/docker-setup.md) - Documentação completa da infraestrutura Docker
-- [Especificações](specs/) - Especificações funcionais e não-funcionais do projeto
+- [Documentação de produto](docs/product/) - Especificações funcionais e não-funcionais do projeto
 
 ## Roadmap
 

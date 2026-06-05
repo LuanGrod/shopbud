@@ -95,7 +95,7 @@
 - Padding: 16px
 - Ícone de drag (≡) à esquerda para reordenação
 - Nome do setor ao centro
-- Contador de produtos à direita
+- Menu de ações à direita quando usado em tela de gerenciamento
 
 **Bottom Bar de Totais:**
 
@@ -135,10 +135,7 @@
     - Título: "Entrar"
     - Input de e-mail
     - Input de senha
-    - Link "Esqueci minha senha"
     - Botão primário "Entrar"
-    - Divisor "ou"
-    - Botão secundário com ícone Google "Entrar com Google"
     - Texto no rodapé: "Não tem conta? Criar conta"
 
 ---
@@ -157,43 +154,49 @@
 - Header: Título "Meus Templates" + ícone de configurações
 - Lista de cards de template, cada um com:
     - Nome do template
-    - Quantidade de setores
-    - Menu de ações (três pontos): Editar, Compartilhar, Excluir
+    - Menu de ações (três pontos): Editar nome, Editar setores, Compartilhar, Excluir
 - Botão primário fixo no rodapé: "Iniciar Compra"
 - FAB no canto inferior direito para criar novo template
 
 ---
 
-**T-005: Criar/Editar Template**
+**T-005: Criar/Editar Nome do Template**
 
 - Header: Seta voltar + Título "Novo Template" ou "Editar Template"
 - Input: Nome do template
-- Seção "Setores":
-    - Lista de cards de setor (draggable para reordenar)
-    - Botão "+ Adicionar Setor" ao final da lista
 - Botão primário no rodapé: "Salvar"
 
 ---
 
-**T-006: Editar Setor**
+**T-006: Gerenciar Setores do Template**
+
+- Header: Seta voltar + Nome do template
+- Lista de cards de setor, ordenados conforme a rota do supermercado
+- Cada card: Nome do setor + menu de ações (Editar nome, Editar produtos, Excluir)
+- Drag-and-drop para reordenar setores
+- Botão "+ Adicionar Setor" ao final da lista
+
+---
+
+**T-007: Gerenciar Produtos do Setor**
 
 - Header: Seta voltar + Nome do setor (editável)
-- Lista de cards de produto (draggable para reordenar)
+- Lista de cards de produto ordenada por criação
 - Cada card: Nome do produto + ícone de excluir
 - Botão "+ Adicionar Produto" ao final da lista
 - Alterações salvam automaticamente ou botão "Salvar"
 
 ---
 
-**T-007: Selecionar Template para Compra**
+**T-008: Selecionar Template para Compra**
 
 - Modal ou tela com lista de templates disponíveis
-- Cada item mostra: Nome + quantidade de setores + quantidade de produtos
+- Cada item mostra o nome do template
 - Ao clicar, inicia a sessão de compra
 
 ---
 
-**T-008: Sessão de Compra - Setor Atual**
+**T-009: Sessão de Compra - Setor Atual**
 
 - Header: Nome do setor atual + indicador de progresso ("2 de 5 setores")
 - Lista de produtos do setor:
@@ -204,10 +207,11 @@
 - Bottom bar fixa: Subtotal do setor | Total da compra
 - Navegação: Botões "Anterior" e "Próximo" ou swipe lateral
 - Botão "Ver todos os setores" para navegação direta
+- Se ficar offline após iniciar a sessão, exibe indicador discreto de conexão sem bloquear a compra
 
 ---
 
-**T-009: Modal - Marcar Produto**
+**T-010: Modal - Marcar Produto**
 
 - Fundo escurecido
 - Card branco centralizado:
@@ -218,18 +222,18 @@
 
 ---
 
-**T-010: Modal - Adicionar Produto Avulso**
+**T-011: Modal - Adicionar Produto Avulso**
 
 - Similar ao anterior, com campo adicional:
     - Input: Nome do produto
     - Input: Preço
     - Input: Quantidade
-    - Toggle/Checkbox: "Adicionar também ao template"
     - Botões: "Cancelar" | "Adicionar"
+    - O produto é adicionado apenas no setor atual da sessão
 
 ---
 
-**T-011: Navegação de Setores**
+**T-012: Navegação de Setores**
 
 - Modal ou bottom sheet
 - Lista de todos os setores com indicadores:
@@ -240,7 +244,7 @@
 
 ---
 
-**T-012: Finalizar Compra - Resumo**
+**T-013: Finalizar Compra - Resumo**
 
 - Header: "Resumo da Compra"
 - Data e hora
@@ -250,36 +254,38 @@
     - Ao expandir: Lista de produtos com preço × quantidade
 - Total geral em destaque (fonte grande, Verde Menta)
 - Botões: "Voltar para Compra" (secundário) | "Finalizar" (primário)
+- Se estiver offline ao finalizar, informa que a finalização ficará pendente de sincronização
 
 ---
 
-**T-013: Compra Finalizada (Sucesso)**
+**T-014: Compra Finalizada (Sucesso)**
 
 - Ícone de check grande (verde)
 - Mensagem: "Compra finalizada!"
 - Total gasto em destaque
 - Botões: "Ver no Histórico" | "Voltar ao Início"
+- Quando a finalização estiver pendente de sincronização, exibe estado "Aguardando conexão" e não oferece acesso ao histórico remoto até sincronizar
 
 ---
 
-**T-014: Histórico de Compras**
+**T-015: Histórico de Compras**
 
 - Header: "Histórico"
 - Lista de compras ordenada por data (mais recente primeiro)
 - Cada item: Data + Nome do template + Total gasto
-- Ao clicar, abre detalhes (T-015)
-- Botão/aba para "Ver Evolução" (T-016)
+- Ao clicar, abre detalhes (T-016)
+- Botão/aba para "Ver Evolução" (T-017)
 
 ---
 
-**T-015: Detalhes da Compra (Histórico)**
+**T-016: Detalhes da Compra (Histórico)**
 
-- Similar ao resumo (T-012), mas em modo visualização
+- Similar ao resumo (T-013), mas em modo visualização
 - Botão "Excluir" no header (com confirmação)
 
 ---
 
-**T-016: Evolução de Gastos**
+**T-017: Evolução de Gastos**
 
 - Header: "Evolução de Gastos"
 - Gráfico de linha ou barras mostrando gastos por mês
@@ -289,7 +295,7 @@
 
 ---
 
-**T-017: Compartilhar Template**
+**T-018: Compartilhar Template**
 
 - Modal após clicar em "Compartilhar":
     - Título: "Compartilhar Template"
@@ -300,7 +306,7 @@
 
 ---
 
-**T-018: Importar Template**
+**T-019: Importar Template**
 
 - Modal ao clicar em "Importar":
     - Título: "Importar Template"
@@ -311,7 +317,7 @@
 
 ---
 
-**T-019: Comparar Preços (Calculadora)**
+**T-020: Comparar Preços (Calculadora)**
 
 - Acessível pelo FAB
 - Título: "Comparar Preços"
@@ -324,7 +330,7 @@
 
 ---
 
-**T-020: Configurações**
+**T-021: Configurações**
 
 - Header: "Configurações"
 - Opções:
@@ -339,7 +345,9 @@
 
 `Splash → Login/Cadastro → Home (Templates)
 │
-├── Criar/Editar Template → Editar Setor
+├── Criar/Editar Template
+│
+├── Editar Setores do Template → Editar Produtos do Setor
 │
 ├── Iniciar Compra → Selecionar Template → Sessão de Compra → Resumo → Sucesso
 │

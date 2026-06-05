@@ -1,3 +1,30 @@
+## Workspace context
+
+This agent is normally run from `backend/` so Laravel Boost can inspect the Laravel application correctly. Treat `backend/` as the Laravel service root, not as the product root.
+
+Project-level documents live one directory above this file:
+
+- Domain glossary: `../CONTEXT.md`
+- Product docs: `../docs/product/`
+- MVP PRD: `../docs/product/12-prd-mvp.md`
+- Project docs and ADRs: `../docs/`
+
+When work touches product behavior, API contracts, frontend flows, offline behavior, or cross-service architecture, read the project-level documents above before changing backend code. Keep Laravel-specific implementation inside `backend/` unless the user explicitly asks to edit product-level docs.
+
+## Agent skills
+
+### Issue tracker
+
+Issues are tracked as local markdown files under the project root `.scratch/` directory. See `../docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Use the default triage vocabulary: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `../docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context fullstack product. The domain glossary is `../CONTEXT.md`; product docs and PRD are under `../docs/product/`. See `../docs/agents/domain.md`.
+
 <laravel-boost-guidelines>
 === foundation rules ===
 

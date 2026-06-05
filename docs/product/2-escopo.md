@@ -13,12 +13,12 @@
 - [ ]  Início de uma sessão de compra baseada em um template
 - [ ]  Navegação entre setores durante a compra (próximo, anterior, ir para específico)
 - [ ]  Marcação de produtos com preço e quantidade durante a compra
-- [ ]  Adição de produtos avulsos (só na compra atual ou também no template)
+- [ ]  Adição de produtos avulsos apenas na compra atual
 - [ ]  Exibição do gasto parcial por setor e gasto total em tempo real
 - [ ]  Tela de resumo ao finalizar a compra
 - [ ]  Calculadora de comparação de preços (preço por unidade/litro/kg)
-- [ ]  Funcionamento offline com sincronização posterior
-- [ ]  Compartilhamento de templates via exportação/importação de arquivo JSON
+- [ ]  Continuação e finalização offline de uma sessão iniciada online, com sincronização posterior da finalização
+- [ ]  Compartilhamento de templates via código temporário baseado em snapshot
 - [ ]  Histórico de compras finalizadas com detalhamento completo (produtos, preços, quantidades, setores, data)
 - [ ]  Visualização da evolução de gastos ao longo do tempo (total e por setor)
 
@@ -36,3 +36,5 @@
 ### 2.3 Futuro (possíveis evoluções)
 
 - Leitura de etiquetas de preço via câmera (OCR) para captura automática de nome e preço do produto
+- Recuperação de senha com fluxo completo de "esqueci minha senha", envio de e-mail, token temporário e redefinição segura
+- Login com Google

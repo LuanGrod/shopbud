@@ -6,11 +6,10 @@
 
 | Campo      | Tipo              | Descrição                     |
 | ---------- | ----------------- | ----------------------------- |
-| id         | UUID              | Identificador único           |
+| id         | bigint            | Identificador único           |
 | name       | string            | Nome do usuário               |
 | email      | string            | E-mail (único)                |
 | password   | string            | Senha hasheada                |
-| google_id  | string (nullable) | ID do Google para login OAuth |
 | created_at | datetime          | Data de criação               |
 | updated_at | datetime          | Data de atualização           |
 
@@ -20,9 +19,9 @@
 
 | Campo      | Tipo      | Descrição                  |
 | ---------- | --------- | -------------------------- |
-| id         | UUID      | Identificador único        |
-| user_id    | UUID (FK) | Referência ao usuário dono |
-| name       | string    | Nome do template           |
+| id         | bigint    | Identificador único        |
+| user_id    | bigint (FK) | Referência ao usuário dono |
+| name       | string    | Nome único por usuário     |
 | created_at | datetime  | Data de criação            |
 | updated_at | datetime  | Data de atualização        |
 
@@ -32,10 +31,10 @@
 
 | Campo       | Tipo      | Descrição              |
 | ----------- | --------- | ---------------------- |
-| id          | UUID      | Identificador único    |
-| template_id | UUID (FK) | Referência ao template |
-| name        | string    | Nome do setor          |
-| order       | integer   | Posição na ordenação   |
+| id          | bigint    | Identificador único    |
+| template_id | bigint (FK) | Referência ao template |
+| name        | string    | Nome único por template |
+| order       | integer   | Posição normalizada na ordem do template |
 | created_at  | datetime  | Data de criação        |
 | updated_at  | datetime  | Data de atualização    |
 
@@ -45,9 +44,9 @@
 
 | Campo      | Tipo      | Descrição           |
 | ---------- | --------- | ------------------- |
-| id         | UUID      | Identificador único |
-| sector_id  | UUID (FK) | Referência ao setor |
-| name       | string    | Nome do produto     |
+| id         | bigint    | Identificador único |
+| sector_id  | bigint (FK) | Referência ao setor |
+| name       | string    | Nome único por setor |
 | created_at | datetime  | Data de criação     |
 | updated_at | datetime  | Data de atualização |
 
@@ -57,9 +56,9 @@
 
 | Campo                | Tipo      | Descrição                                        |
 | -------------------- | --------- | ------------------------------------------------ |
-| id                   | UUID      | Identificador único                              |
+| id                   | bigint    | Identificador único                              |
 | code                 | string    | Código único de compartilhamento                 |
-| original_template_id | UUID (FK) | Referência ao template original                  |
+| template_id          | bigint (FK) | Referência ao template original                  |
 | snapshot             | JSON      | Cópia congelada do template (setores e produtos) |
 | expires_at           | datetime  | Data de expiração (24h após criação)             |
 | created_at           | datetime  | Data de criação                                  |
@@ -70,11 +69,12 @@
 
 | Campo       | Tipo      | Descrição                                        |
 | ----------- | --------- | ------------------------------------------------ |
-| id          | UUID      | Identificador único                              |
-| user_id     | UUID (FK) | Referência ao usuário                            |
-| template_id | UUID (FK) | Referência ao template usado como base           |
+| id          | bigint    | Identificador único                              |
+| user_id     | bigint (FK) | Referência ao usuário                            |
+| template_id | bigint (FK, nullable) | Referência ao template usado como base, preservando a sessão se o template for excluído |
 | status      | enum      | Status da sessão (active, finished, cancelled)   |
 | snapshot    | JSON      | Cópia dos setores e produtos no início da sessão |
+| expires_at  | datetime  | Data/hora limite para finalizar a sessão active   |
 | created_at  | datetime  | Data de criação                                  |
 | updated_at  | datetime  | Data de atualização                              |
 
@@ -84,8 +84,8 @@
 
 | Campo        | Tipo      | Descrição                                          |
 | ------------ | --------- | -------------------------------------------------- |
-| id           | UUID      | Identificador único                                |
-| session_id   | UUID (FK) | Referência à sessão de compra                      |
+| id           | bigint    | Identificador único                                |
+| session_id   | bigint (FK) | Referência à sessão de compra                      |
 | sector_name  | string    | Nome do setor (copiado do snapshot)                |
 | product_name | string    | Nome do produto                                    |
 | price        | decimal   | Preço unitário                                     |
@@ -100,8 +100,8 @@
 
 | Campo           | Tipo      | Descrição                                   |
 | --------------- | --------- | ------------------------------------------- |
-| id              | UUID      | Identificador único                         |
-| user_id         | UUID (FK) | Referência ao usuário                       |
+| id              | bigint    | Identificador único                         |
+| user_id         | bigint (FK) | Referência ao usuário                       |
 | template_name   | string    | Nome do template usado (copiado)            |
 | finished_at     | datetime  | Data/hora de finalização                    |
 | total           | decimal   | Valor total da compra                       |
@@ -112,7 +112,21 @@
 
 ### 7.2 Relacionamentos
 
-`User (1) ────── (N) Template Template (1) ────── (N) Sector Sector (1) ────── (N) Product Template (1) ────── (N) SharedTemplate User (1) ────── (N) ShoppingSession ShoppingSession (1) ────── (N) ShoppingItem User (1) ────── (N) PurchaseHistory`
+`User (1) ────── (N) Template`
+
+`Template (1) ────── (N) Sector`
+
+`Sector (1) ────── (N) Product`
+
+`Template (1) ────── (N) SharedTemplate`
+
+`User (1) ────── (N) ShoppingSession`
+
+`Template (0..1) ────── (N) ShoppingSession`
+
+`ShoppingSession (1) ────── (N) ShoppingItem`
+
+`User (1) ────── (N) PurchaseHistory`
 
 ---
 
@@ -120,4 +134,8 @@
 
 - **Snapshots em JSON:** Usados em SharedTemplate, ShoppingSession e PurchaseHistory para preservar o estado exato no momento da ação, independente de alterações futuras nos templates originais.
 - **Desnormalização intencional:** Campos como `template_name` e `sector_name` são copiados em vez de referenciados para manter o histórico íntegro mesmo se o template original for editado ou excluído.
-- **IndexedDB (offline):** As entidades ShoppingSession e ShoppingItem serão replicadas localmente para funcionamento offline, com um campo adicional `sync_status` (synced, pending) para controle de sincronização.
+- **IndexedDB (offline):** O frontend mantém localmente a sessão já iniciada, o estado temporário de itens marcados e uma fila de operações pendentes, especialmente `finish_session`.
+- **Unicidades:** `templates` deve ser único por `user_id + name`, `sectors` por `template_id + name`, `sectors` por `template_id + order`, e `products` por `sector_id + name`.
+- **Deleções:** Excluir um template remove setores, produtos e compartilhamentos ativos; sessões e histórico permanecem preservados por snapshot. Excluir um setor remove seus produtos.
+- **Sessão ativa:** O backend persiste a ShoppingSession e seu snapshot ao iniciar a compra, mas ShoppingItems só são persistidos quando a sessão é finalizada.
+- **Expiração:** Uma ShoppingSession `active` expira em 24 horas e deve ser cancelada antes de iniciar uma nova sessão ou aceitar uma finalização.

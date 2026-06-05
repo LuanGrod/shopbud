@@ -15,15 +15,15 @@
 
 ### 4.3 Disponibilidade e Offline
 
-- **RNF-008:** O sistema deve funcionar 100% offline durante uma sessão de compra após o carregamento inicial
+- **RNF-008:** O sistema deve funcionar offline durante uma sessão de compra após ela ter sido iniciada online
 - **RNF-009:** O sistema deve utilizar IndexedDB para armazenamento local dos dados
-- **RNF-010:** O sistema deve implementar estratégia de sincronização que resolva conflitos priorizando os dados mais recentes
+- **RNF-010:** O sistema deve sincronizar finalizações pendentes de sessões iniciadas online e rejeitar finalizações de sessões expiradas ou canceladas
 
 ### 4.4 Segurança
 
 - **RNF-011:** As senhas devem ser armazenadas utilizando hash seguro (bcrypt ou similar)
 - **RNF-012:** A comunicação entre cliente e servidor deve ser feita exclusivamente via HTTPS
-- **RNF-013:** A autenticação deve utilizar tokens JWT com tempo de expiração definido
+- **RNF-013:** A autenticação da API deve utilizar tokens do Laravel Sanctum, com expiração configurada quando necessário
 - **RNF-014:** Os dados locais sensíveis devem ser limpos ao fazer logout
 
 ### 4.5 Compatibilidade

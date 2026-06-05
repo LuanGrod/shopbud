@@ -18,10 +18,9 @@ A aplicação segue uma arquitetura cliente-servidor com comunicação via API R
 
 **Backend:**
 
-- PHP 8.x
-- Laravel 10.x
+- PHP 8.4
+- Laravel 13.x
 - Laravel Sanctum (autenticação API)
-- Laravel Socialite (OAuth Google)
 
 **Banco de Dados:**
 
@@ -46,23 +45,33 @@ Optamos por MySQL pelos seguintes motivos:
 
 **Autenticação:**
 
-`POST   /api/auth/register POST   /api/auth/login POST   /api/auth/logout POST   /api/auth/google POST   /api/auth/forgot-password POST   /api/auth/reset-password`
+`POST   /api/auth/register POST   /api/auth/login POST   /api/auth/logout`
 
 **Templates:**
 
-`GET    /api/templates POST   /api/templates GET    /api/templates/{id} PUT    /api/templates/{id} DELETE /api/templates/{id} POST   /api/templates/{id}/share POST   /api/templates/import`
+`GET    /api/templates POST   /api/templates GET    /api/templates/{template} PATCH  /api/templates/{template} DELETE /api/templates/{template} POST   /api/templates/{template}/share POST   /api/templates/import`
+
+`GET /api/templates` retorna apenas `id` e `name`, ordenando por `updated_at desc` por padrão. `GET /api/templates/{template}` retorna a estrutura completa do template, com setores ordenados e produtos dentro de cada setor.
 
 **Setores:**
 
-`GET    /api/templates/{templateId}/sectors POST   /api/templates/{templateId}/sectors PUT    /api/sectors/{id} DELETE /api/sectors/{id} PUT    /api/templates/{templateId}/sectors/reorder`
+`GET    /api/templates/{template}/sectors POST   /api/templates/{template}/sectors PATCH  /api/templates/{template}/sectors/{sector} DELETE /api/templates/{template}/sectors/{sector} PUT    /api/templates/{template}/sectors/order`
+
+Novos setores entram no final da ordem atual. O endpoint de ordenação recebe os setores do template, valida pertencimento e salva a ordem normalizada como `1, 2, 3...`.
 
 **Produtos:**
 
-`GET    /api/sectors/{sectorId}/products POST   /api/sectors/{sectorId}/products PUT    /api/products/{id} DELETE /api/products/{id} PUT    /api/sectors/{sectorId}/products/reorder`
+`GET    /api/templates/{template}/sectors/{sector}/products POST   /api/templates/{template}/sectors/{sector}/products PATCH  /api/templates/{template}/sectors/{sector}/products/{product} DELETE /api/templates/{template}/sectors/{sector}/products/{product}`
+
+Produtos não têm ordenação manual; a listagem pode usar ordem de criação.
 
 **Sessão de Compra:**
 
-`POST   /api/shopping/start GET    /api/shopping/current POST   /api/shopping/items PUT    /api/shopping/items/{id} DELETE /api/shopping/items/{id} POST   /api/shopping/finish POST   /api/shopping/cancel`
+`POST   /api/shopping-sessions/start GET    /api/shopping-sessions/current POST   /api/shopping-sessions/{session}/finish POST   /api/shopping-sessions/{session}/cancel`
+
+Ao iniciar, o backend cria uma sessão `active` com snapshot e validade de 24 horas. Durante a compra, navegação, itens marcados, produtos avulsos, subtotais e total temporário ficam no frontend. Ao finalizar, o frontend envia a lista final de itens; o backend valida, recalcula os subtotais e total oficial, persiste os Shopping Items, cria o histórico e muda a sessão para `finished`.
+
+Se já existir uma sessão `active` válida, o endpoint de início retorna essa sessão em vez de criar outra. Se existir uma sessão `active` expirada, o backend cancela a expirada antes de criar uma nova.
 
 **Histórico:**
 
@@ -82,27 +91,26 @@ Optamos por MySQL pelos seguintes motivos:
 
 **IndexedDB (via Dexie.js):**
 
-- Replica local das entidades: templates, sectors, products, shopping_session, shopping_items
-- Campo `sync_status` em cada registro (synced, pending, conflict)
-- Campo `local_updated_at` para controle de conflitos
+- Replica local das entidades necessárias para continuar uma sessão já iniciada: templates, sectors, products, shopping_session e estado local de shopping_items
+- Fila local de operações pendentes, especialmente `finish_session`
+- Metadados locais para retry e controle da operação pendente
 
 **Fluxo de Sincronização:**
 
 1. Ao iniciar o app, verifica conexão
 2. Se online, busca dados do servidor e atualiza IndexedDB
-3. Durante uso offline, todas as operações são salvas no IndexedDB com `sync_status: pending`
-4. Ao detectar reconexão, dispara sincronização em background
-5. Endpoint `/api/sync` recebe batch de alterações pendentes
-6. Servidor processa e retorna conflitos (se houver)
-7. Cliente resolve conflitos priorizando dados mais recentes
+3. Uma sessão de compra só pode ser iniciada online
+4. Durante uma sessão já iniciada, alterações de itens ficam locais no frontend
+5. Se o usuário finalizar offline, o frontend salva uma operação pendente `finish_session` com o identificador da sessão e os itens finais
+6. Ao detectar reconexão, dispara sincronização em background
+7. Endpoint `/api/sync` recebe operações pendentes de alto nível, como `finish_session`
+8. Servidor rejeita finalizações de sessões expiradas ou canceladas
 
 ### 8.6 Autenticação
 
-- Tokens JWT via Laravel Sanctum
-- Access token com expiração de 7 dias
+- Tokens de API via Laravel Sanctum
+- Expiração configurada pelo Sanctum, quando necessária
 - Token armazenado no localStorage (frontend)
-- Refresh automático quando próximo da expiração
-- OAuth com Google via Laravel Socialite
 
 ### 8.7 Estrutura de Pastas (sugestão)
 
