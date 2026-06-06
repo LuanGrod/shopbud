@@ -265,6 +265,40 @@ class AuthControllerTest extends TestCase
             ->assertJsonValidationErrors(['password']);
     }
 
+    // ==================== USER ====================
+
+    public function test_authenticated_user_can_view_current_user(): void
+    {
+        // Arrange
+        $user = User::factory()->create([
+            'name' => 'User Test',
+            'email' => 'user@email.com',
+        ]);
+        $token = $user->createToken('test')->plainTextToken;
+
+        // Act
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->getJson('/api/user');
+
+        // Assert
+        $response
+            ->assertOk()
+            ->assertJsonPath('id', $user->id)
+            ->assertJsonPath('name', 'User Test')
+            ->assertJsonPath('email', 'user@email.com')
+            ->assertJsonMissingPath('password');
+    }
+
+    public function test_user_endpoint_fails_without_token(): void
+    {
+        // Act
+        $response = $this->getJson('/api/user');
+
+        // Assert
+        $response
+            ->assertUnauthorized();
+    }
+
     // ==================== LOGOUT ====================
 
     public function test_user_can_logout_with_valid_token(): void
@@ -285,6 +319,27 @@ class AuthControllerTest extends TestCase
         $this->assertDatabaseCount('personal_access_tokens', 0);
     }
 
+    public function test_logout_revokes_current_token_for_protected_routes(): void
+    {
+        // Arrange
+        $user = User::factory()->create();
+        $token = $user->createToken('test')->plainTextToken;
+
+        // Act
+        $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->postJson('/api/auth/logout')
+            ->assertOk();
+
+        $this->refreshApplication();
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->getJson('/api/user');
+
+        // Assert
+        $response
+            ->assertUnauthorized();
+    }
+
     public function test_logout_fails_without_token(): void
     {
         // Act
@@ -292,8 +347,7 @@ class AuthControllerTest extends TestCase
 
         // Assert
         $response
-            ->assertStatus(400)
-            ->assertJson(['success' => false]);
+            ->assertUnauthorized();
     }
 
     public function test_logout_fails_with_invalid_token(): void
@@ -304,7 +358,6 @@ class AuthControllerTest extends TestCase
 
         // Assert
         $response
-            ->assertStatus(400)
-            ->assertJson(['success' => false]);
+            ->assertUnauthorized();
     }
 }

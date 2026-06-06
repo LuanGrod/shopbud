@@ -3,15 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
 
-    function register(Request $request)
+    public function register(Request $request): JsonResponse
     {
         $validated = $request->validate([
             "name" => "required|string|max:255",
@@ -30,7 +30,7 @@ class AuthController extends Controller
         return response()->json(["success" => true, "user" => $user, "token" => $token], 201);
     }
 
-    function login(Request $request)
+    public function login(Request $request): JsonResponse
     {
         $validated = $request->validate([
             "email" => "required|email:rfc,dns",
@@ -48,21 +48,9 @@ class AuthController extends Controller
         return response()->json(["success" => false, "msg" => "Usuário não encontrado"], 401);
     }
 
-    function logout(Request $request)
+    public function logout(Request $request): JsonResponse
     {
-        $token = $request->bearerToken();
-
-        if (!$token) {
-            return response()->json(["success" => false, "msg" => "Token não informado"], 400);
-        }
-
-        $access_token = PersonalAccessToken::findToken($token);
-
-        if (!$access_token) {
-            return response()->json(["success" => false, "msg" => "Token fornecido é invalido"], 400);
-        }
-
-        $access_token->delete();
+        $request->user()->currentAccessToken()->delete();
 
         return response()->json(["success" => true, "msg" => "Logout realizado com sucesso"]);
     }

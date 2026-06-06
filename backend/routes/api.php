@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['throttle:global', 'auth:sanctum'])->group(function () {
     Route::get('/user', function (Request $request) {
+        // essa rota é usada nos testes de authentication, portanto nao pode ser apagada
         return $request->user();
     });
     Route::apiResource('templates', TemplateController::class);
@@ -15,5 +16,5 @@ Route::middleware(['throttle:global', 'auth:sanctum'])->group(function () {
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
-    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 });
