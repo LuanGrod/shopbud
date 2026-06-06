@@ -11,3 +11,9 @@ The skills speak in terms of five canonical triage roles. This file maps those r
 | `wontfix` | `wontfix` | Will not be actioned |
 
 When a skill mentions a role, use the corresponding label string from this table.
+
+## Additional Local Labels
+
+| Label in our tracker | Meaning |
+| --- | --- |
+| `accepted` | Human reviewed the completed work and accepted the issue |
