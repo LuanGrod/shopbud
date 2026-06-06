@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: accepted
 
 # Implementar Sectors ordenados dentro de Template
 
@@ -16,14 +16,14 @@ Permitir que o usuario modele a rota real de um Template criando, renomeando, re
 
 ## Acceptance criteria
 
-- [ ] Sector pertence obrigatoriamente a um Template.
-- [ ] Nome de Sector e unico dentro do Template.
-- [ ] Novo Sector e sempre acrescentado ao fim da rota atual.
-- [ ] Reorder exige todos e somente os Sectors do Template.
-- [ ] Ordem persistida fica normalizada sem lacunas ou duplicatas.
-- [ ] Excluir Sector exclui seus Products.
-- [ ] Usuario nao consegue operar Sectors de Template alheio.
-- [ ] Feature tests cobrem criacao, validacao, rename, delete cascade e reorder.
+- [x] Sector pertence obrigatoriamente a um Template.
+- [x] Nome de Sector e unico dentro do Template.
+- [x] Novo Sector e sempre acrescentado ao fim da rota atual.
+- [x] Reorder exige todos e somente os Sectors do Template.
+- [x] Ordem persistida fica normalizada sem lacunas ou duplicatas.
+- [x] Excluir Sector exclui seus Products.
+- [x] Usuario nao consegue operar Sectors de Template alheio.
+- [x] Feature tests cobrem criacao, validacao, rename, delete cascade e reorder.
 
 ## Blocked by
 

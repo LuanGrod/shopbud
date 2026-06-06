@@ -23,7 +23,8 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call([
-            TemplateSeeder::class
+            TemplateSeeder::class,
+            SectorSeeder::class,
         ]);
     }
 }

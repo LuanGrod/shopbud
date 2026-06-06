@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('template_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->integer('order');
+            $table->unique(['template_id', 'name']);
             $table->timestamps();
         });
     }
