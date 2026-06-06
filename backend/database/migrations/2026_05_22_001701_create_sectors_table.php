@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('sectors', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('template_id')->nullable()->index();
+            $table->foreignId('template_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->integer('order');
             $table->timestamps();

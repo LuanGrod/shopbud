@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('shopping_sessions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->index();
-            $table->foreignId('template_id')->nullable()->index();
-            $table->enum("status", ["active", "finished", "cancelled"]);
-            $table->json("snapshot");
+            $table->foreignId('template_id')->nullable()->constrained()->nullOnDelete();
+            $table->enum('status', ['active', 'finished', 'cancelled']);
+            $table->json('snapshot');
             $table->timestamps();
         });
     }
