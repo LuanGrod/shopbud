@@ -17,7 +17,15 @@ class TemplateResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'created_at' => $this->created_at?->format('d/m/Y'), // formato customizado
+            'sectors' => $this->whenLoaded('sectors', fn () => $this->sectors->map(fn ($sector) => [
+                'id' => $sector->id,
+                'name' => $sector->name,
+                'order' => $sector->order,
+                'products' => $sector->products->map(fn ($product) => [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                ])->values(),
+            ])->values()),
         ];
     }
 }

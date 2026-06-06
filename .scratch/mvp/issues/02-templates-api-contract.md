@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: accepted
 
 # Implementar Templates proprios com contrato leve e detalhe estrutural
 
@@ -16,13 +16,13 @@ Entregar o fluxo backend para o usuario autenticado criar, listar, abrir, renome
 
 ## Acceptance criteria
 
-- [ ] Template pertence obrigatoriamente a um usuario.
-- [ ] Nome de Template e unico por usuario, mas pode repetir entre usuarios diferentes.
-- [ ] Usuario nao consegue ver, renomear ou excluir Template de outro usuario.
-- [ ] Listagem retorna apenas os campos leves esperados pelo frontend.
-- [ ] Detalhe retorna estrutura completa mesmo quando nao ha Sectors.
-- [ ] Exclusao remove estrutura do Template sem apagar historico de compras.
-- [ ] Schema, model, policy, resource, controller/request e feature tests cobrem o comportamento.
+- [x] Template pertence obrigatoriamente a um usuario.
+- [x] Nome de Template e unico por usuario, mas pode repetir entre usuarios diferentes.
+- [x] Usuario nao consegue ver, renomear ou excluir Template de outro usuario.
+- [x] Listagem retorna apenas os campos leves esperados pelo frontend.
+- [x] Detalhe retorna estrutura completa mesmo quando nao ha Sectors.
+- [x] Exclusao remove estrutura do Template sem apagar historico de compras.
+- [x] Schema, model, policy, resource, controller/request e feature tests cobrem o comportamento.
 
 ## Blocked by
 

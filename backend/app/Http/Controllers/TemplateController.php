@@ -21,8 +21,11 @@ class TemplateController extends Controller
         $templates = $request->user()
             ->templates()
             ->withSearch($request)
-            ->withSort($request)
-            ->paginate($perPage);
+            ->when(
+                $request->has('sort'),
+                fn ($query) => $query->withSort($request),
+                fn ($query) => $query->latest('updated_at')
+            )->paginate($perPage);
 
         return TemplateResource::collection($templates);
     }
@@ -45,6 +48,8 @@ class TemplateController extends Controller
     public function show(Template $template)
     {
         $this->authorize('view', $template);
+
+        $template->load('sectors.products');
 
         return new TemplateResource($template);
     }
