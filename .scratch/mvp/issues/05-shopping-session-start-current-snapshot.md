@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: accepted
 
 # Iniciar e recuperar Shopping Session ativa com Snapshot
 
@@ -15,16 +15,15 @@ Criar o fluxo backend para iniciar uma Shopping Session online a partir de um Te
 
 ## Acceptance criteria
 
-- [ ] Iniciar sessao exige usuario autenticado.
-- [ ] Iniciar sessao exige Template proprio com pelo menos um Sector.
-- [ ] Template sem Sectors retorna erro de dominio apropriado.
-- [ ] Apenas uma Shopping Session ativa valida existe por usuario.
-- [ ] Snapshot copia nomes e estrutura de Sectors e Products no momento do inicio.
-- [ ] Edicoes posteriores no Template nao alteram Snapshot da sessao.
-- [ ] Products adicionados durante a sessao nao sao persistidos no Template por este fluxo.
-- [ ] Feature tests cobrem ownership, sessao existente, Snapshot e independencia.
+- [x] Iniciar sessao exige usuario autenticado.
+- [x] Iniciar sessao exige Template proprio com pelo menos um Sector.
+- [x] Template sem Sectors retorna erro de dominio apropriado.
+- [x] Apenas uma Shopping Session ativa valida existe por usuario.
+- [x] Snapshot copia nomes e estrutura de Sectors e Products no momento do inicio.
+- [x] Edicoes posteriores no Template nao alteram Snapshot da sessao.
+- [x] Products adicionados durante a sessao nao sao persistidos no Template por este fluxo.
+- [x] Feature tests cobrem ownership, sessao existente, Snapshot e independencia.
 
 ## Blocked by
 
 - 04-products-api-contract.md
-
