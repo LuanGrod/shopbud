@@ -13,8 +13,7 @@ class UpdateSectorRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->sector->template_id === $this->template->id
-            && $this->user()->can('update', $this->template);
+        return true;
     }
 
     /**

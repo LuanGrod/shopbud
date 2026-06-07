@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: accepted
 
 # Implementar Products dentro de Sector
 
@@ -15,13 +15,13 @@ Permitir que o usuario gerencie Products esperados dentro de cada Sector do Temp
 
 ## Acceptance criteria
 
-- [ ] Product pertence obrigatoriamente a um Sector.
-- [ ] Nome de Product e unico dentro do Sector.
-- [ ] Products podem repetir em Sectors diferentes.
-- [ ] Listagem usa ordem de criacao e nao expoe reorder.
-- [ ] Usuario nao consegue operar Product fora de seus Templates.
-- [ ] Alteracoes em Products de Template nao afetam Shopping Sessions ja criadas.
-- [ ] Schema, model, resources, requests/controllers e feature tests cobrem o comportamento.
+- [x] Product pertence obrigatoriamente a um Sector.
+- [x] Nome de Product e unico dentro do Sector.
+- [x] Products podem repetir em Sectors diferentes.
+- [x] Listagem usa ordem de criacao e nao expoe reorder.
+- [x] Usuario nao consegue operar Product fora de seus Templates.
+- [x] Alteracoes em Products de Template nao afetam Shopping Sessions ja criadas.
+- [x] Schema, model, resources, requests/controllers e feature tests cobrem o comportamento.
 
 ## Blocked by
 

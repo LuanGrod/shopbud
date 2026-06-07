@@ -18,6 +18,7 @@ class SectorResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'order' => $this->order,
+            'products' => ProductResource::collection($this->whenLoaded('products')),
         ];
     }
 }

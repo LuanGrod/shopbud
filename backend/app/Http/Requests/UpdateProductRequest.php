@@ -6,7 +6,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class StoreSectorRequest extends FormRequest
+class UpdateProductRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -28,7 +28,9 @@ class StoreSectorRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('sectors', 'name')->where('template_id', $this->template->id),
+                Rule::unique('products', 'name')
+                    ->where('sector_id', $this->sector->id)
+                    ->ignore($this->product),
             ],
         ];
     }

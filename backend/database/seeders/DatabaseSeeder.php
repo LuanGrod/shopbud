@@ -19,12 +19,13 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Luan Rodrigues',
             'email' => 'mail@mail.com',
-            'password' => Hash::make('senha123')
+            'password' => Hash::make('senha123'),
         ]);
 
         $this->call([
             TemplateSeeder::class,
             SectorSeeder::class,
+            ProductSeeder::class,
         ]);
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SectorController;
 use App\Http\Controllers\TemplateController;
 use Illuminate\Http\Request;
@@ -11,9 +12,12 @@ Route::middleware(['throttle:global', 'auth:sanctum'])->group(function () {
         // essa rota é usada nos testes de authentication, portanto nao pode ser apagada
         return $request->user();
     });
-    Route::apiResource('templates', TemplateController::class);
-    Route::put('templates/{template}/sectors/reorder', [SectorController::class, 'reorder']);
-    Route::apiResource('templates.sectors', SectorController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::scopeBindings()->group(function (): void {
+        Route::apiResource('templates', TemplateController::class);
+        Route::put('templates/{template}/sectors/reorder', [SectorController::class, 'reorder']);
+        Route::apiResource('templates.sectors', SectorController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::apiResource('templates.sectors.products', ProductController::class)->only(['index', 'store', 'update', 'destroy']);
+    });
 });
 
 Route::prefix('auth')->group(function () {

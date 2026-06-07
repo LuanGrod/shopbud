@@ -15,6 +15,8 @@ class TemplateController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Template::class);
+
         $perPage = (int) $request->get('per-page', 10);
         $perPage = min(max($perPage, 1), 100);
 
@@ -35,6 +37,8 @@ class TemplateController extends Controller
      */
     public function store(StoreTemplateRequest $request)
     {
+        $this->authorize('create', Template::class);
+
         $template = $request->user()->templates()->create(
             $request->validated()
         );
@@ -59,6 +63,8 @@ class TemplateController extends Controller
      */
     public function update(UpdateTemplateRequest $request, Template $template)
     {
+        $this->authorize('update', $template);
+
         $template->update($request->validated());
 
         return new TemplateResource($template);

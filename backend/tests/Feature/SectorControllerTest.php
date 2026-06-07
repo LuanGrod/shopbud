@@ -247,7 +247,7 @@ class SectorControllerTest extends TestCase
         ]);
     }
 
-    public function test_user_cannot_rename_or_delete_sector_through_a_different_parent_template(): void
+    public function test_sector_routes_return_not_found_when_sector_does_not_belong_to_parent_template(): void
     {
         $user = User::factory()->create();
         $template = Template::factory()->for($user)->create();
@@ -260,12 +260,12 @@ class SectorControllerTest extends TestCase
         $this
             ->actingAs($user)
             ->patchJson("/api/templates/{$template->id}/sectors/{$sector->id}", ['name' => 'Bakery'])
-            ->assertForbidden();
+            ->assertNotFound();
 
         $this
             ->actingAs($user)
             ->deleteJson("/api/templates/{$template->id}/sectors/{$sector->id}")
-            ->assertForbidden();
+            ->assertNotFound();
 
         $this->assertDatabaseHas('sectors', [
             'id' => $sector->id,
