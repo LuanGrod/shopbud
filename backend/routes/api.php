@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SectorController;
+use App\Http\Controllers\ShoppingSessionController;
 use App\Http\Controllers\TemplateController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -13,6 +14,8 @@ Route::middleware(['throttle:global', 'auth:sanctum'])->group(function () {
         return $request->user();
     });
     Route::scopeBindings()->group(function (): void {
+        Route::get('shopping-sessions/current', [ShoppingSessionController::class, 'current']);
+        Route::post('shopping-sessions', [ShoppingSessionController::class, 'store']);
         Route::apiResource('templates', TemplateController::class);
         Route::put('templates/{template}/sectors/reorder', [SectorController::class, 'reorder']);
         Route::apiResource('templates.sectors', SectorController::class)->only(['index', 'store', 'update', 'destroy']);

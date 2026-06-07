@@ -279,6 +279,7 @@ class ProductControllerTest extends TestCase
             'template_id' => $template->id,
             'status' => 'active',
             'snapshot' => json_encode($snapshot),
+            'expires_at' => now()->addDay(),
             'created_at' => now(),
             'updated_at' => now(),
         ]);

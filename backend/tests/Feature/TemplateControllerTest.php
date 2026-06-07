@@ -208,6 +208,7 @@ class TemplateControllerTest extends TestCase
             'template_id' => $template->id,
             'status' => 'finished',
             'snapshot' => json_encode(['name' => 'Archived Market']),
+            'expires_at' => now()->addDay(),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
