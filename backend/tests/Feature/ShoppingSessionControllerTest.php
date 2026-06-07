@@ -9,6 +9,7 @@ use App\Models\Template;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class ShoppingSessionControllerTest extends TestCase
@@ -118,13 +119,46 @@ class ShoppingSessionControllerTest extends TestCase
 
         $this->assertNotSame($expiredSession->id, $response->json('data.id'));
         $this->assertDatabaseCount('shopping_sessions', 2);
+        $this->assertDatabaseHas('shopping_sessions', [
+            'id' => $expiredSession->id,
+            'status' => 'cancelled',
+        ]);
+    }
+
+    public function test_starting_session_does_not_reactivate_cancelled_session(): void
+    {
+        $user = User::factory()->create();
+        $template = Template::factory()->for($user)->create(['name' => 'Central Market']);
+        Sector::factory()->for($template)->create(['name' => 'Produce', 'order' => 1]);
+
+        $cancelledSession = ShoppingSession::factory()->create([
+            'user_id' => $user->id,
+            'template_id' => $template->id,
+            'status' => 'cancelled',
+            'expires_at' => now()->addHour(),
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->postJson('/api/shopping-sessions', ['template_id' => $template->id]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonPath('data.status', 'active')
+            ->assertJsonPath('data.template_id', $template->id);
+
+        $this->assertNotSame($cancelledSession->id, $response->json('data.id'));
+        $this->assertDatabaseHas('shopping_sessions', [
+            'id' => $cancelledSession->id,
+            'status' => 'cancelled',
+        ]);
     }
 
     public function test_current_session_returns_no_content_when_user_has_no_unexpired_active_session(): void
     {
         $user = User::factory()->create();
 
-        ShoppingSession::factory()->create([
+        $expiredSession = ShoppingSession::factory()->create([
             'user_id' => $user->id,
             'status' => 'active',
             'expires_at' => now()->subMinute(),
@@ -134,6 +168,11 @@ class ShoppingSessionControllerTest extends TestCase
             ->actingAs($user)
             ->getJson('/api/shopping-sessions/current')
             ->assertNoContent();
+
+        $this->assertDatabaseHas('shopping_sessions', [
+            'id' => $expiredSession->id,
+            'status' => 'cancelled',
+        ]);
     }
 
     public function test_current_session_returns_users_unexpired_active_session(): void
@@ -173,6 +212,83 @@ class ShoppingSessionControllerTest extends TestCase
             ->assertJsonPath('data.snapshot.sectors.0.name', 'Produce');
     }
 
+    public function test_user_can_cancel_own_active_shopping_session(): void
+    {
+        $user = User::factory()->create();
+        $shoppingSession = ShoppingSession::factory()->create([
+            'user_id' => $user->id,
+            'status' => 'active',
+            'expires_at' => now()->addHour(),
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->postJson("/api/shopping-sessions/{$shoppingSession->id}/cancel");
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.id', $shoppingSession->id)
+            ->assertJsonPath('data.status', 'cancelled');
+
+        $this->assertDatabaseHas('shopping_sessions', [
+            'id' => $shoppingSession->id,
+            'status' => 'cancelled',
+        ]);
+    }
+
+    public function test_user_cannot_cancel_another_users_shopping_session(): void
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $shoppingSession = ShoppingSession::factory()->create([
+            'user_id' => $otherUser->id,
+            'status' => 'active',
+            'expires_at' => now()->addHour(),
+        ]);
+
+        $this
+            ->actingAs($user)
+            ->postJson("/api/shopping-sessions/{$shoppingSession->id}/cancel")
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('shopping_sessions', [
+            'id' => $shoppingSession->id,
+            'status' => 'active',
+        ]);
+    }
+
+    /**
+     * @return array<string, array{status: string}>
+     */
+    public static function nonActiveShoppingSessionStatuses(): array
+    {
+        return [
+            'finished' => ['status' => 'finished'],
+            'cancelled' => ['status' => 'cancelled'],
+        ];
+    }
+
+    #[DataProvider('nonActiveShoppingSessionStatuses')]
+    public function test_user_cannot_cancel_non_active_shopping_session(string $status): void
+    {
+        $user = User::factory()->create();
+        $shoppingSession = ShoppingSession::factory()->create([
+            'user_id' => $user->id,
+            'status' => $status,
+            'expires_at' => now()->addHour(),
+        ]);
+
+        $this
+            ->actingAs($user)
+            ->postJson("/api/shopping-sessions/{$shoppingSession->id}/cancel")
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('shopping_sessions', [
+            'id' => $shoppingSession->id,
+            'status' => $status,
+        ]);
+    }
+
     public function test_shopping_session_routes_require_authentication(): void
     {
         $this
@@ -181,6 +297,10 @@ class ShoppingSessionControllerTest extends TestCase
 
         $this
             ->getJson('/api/shopping-sessions/current')
+            ->assertUnauthorized();
+
+        $this
+            ->postJson('/api/shopping-sessions/1/cancel')
             ->assertUnauthorized();
     }
 

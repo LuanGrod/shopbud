@@ -16,6 +16,7 @@ Route::middleware(['throttle:global', 'auth:sanctum'])->group(function () {
     Route::scopeBindings()->group(function (): void {
         Route::get('shopping-sessions/current', [ShoppingSessionController::class, 'current']);
         Route::post('shopping-sessions', [ShoppingSessionController::class, 'store']);
+        Route::post('shopping-sessions/{shoppingSession}/cancel', [ShoppingSessionController::class, 'cancel']);
         Route::apiResource('templates', TemplateController::class);
         Route::put('templates/{template}/sectors/reorder', [SectorController::class, 'reorder']);
         Route::apiResource('templates.sectors', SectorController::class)->only(['index', 'store', 'update', 'destroy']);

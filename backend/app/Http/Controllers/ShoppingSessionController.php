@@ -69,6 +69,17 @@ class ShoppingSessionController extends Controller
             ->setStatusCode($wasCreated ? 201 : 200);
     }
 
+    public function cancel(ShoppingSession $shoppingSession): ShoppingSessionResource
+    {
+        $this->authorize('cancel', $shoppingSession);
+
+        $shoppingSession->update([
+            'status' => 'cancelled',
+        ]);
+
+        return new ShoppingSessionResource($shoppingSession);
+    }
+
     /**
      * @return array{name: string, sectors: array<int, array{id: int, name: string, order: int, products: array<int, array{id: int, name: string}>}>}
      */
@@ -90,11 +101,22 @@ class ShoppingSessionController extends Controller
 
     private function activeSessionFor(int $userId): ?ShoppingSession
     {
+        $this->cancelExpiredActiveSessionsFor($userId);
+
         return ShoppingSession::query()
             ->where('user_id', $userId)
             ->where('status', 'active')
             ->where('expires_at', '>', now())
             ->latest('id')
             ->first();
+    }
+
+    private function cancelExpiredActiveSessionsFor(int $userId): void
+    {
+        ShoppingSession::query()
+            ->where('user_id', $userId)
+            ->where('status', 'active')
+            ->where('expires_at', '<=', now())
+            ->update(['status' => 'cancelled']);
     }
 }
