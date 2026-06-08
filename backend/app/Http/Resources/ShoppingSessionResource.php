@@ -18,6 +18,7 @@ class ShoppingSessionResource extends JsonResource
             'template_id' => $this->template_id,
             'expires_at' => $this->expires_at?->toJSON(),
             'snapshot' => $this->snapshot,
+            'summary' => $this->when(isset($this->summary), $this->summary),
         ];
     }
 }

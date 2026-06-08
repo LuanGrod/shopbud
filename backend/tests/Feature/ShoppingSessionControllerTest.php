@@ -236,6 +236,254 @@ class ShoppingSessionControllerTest extends TestCase
         ]);
     }
 
+    public function test_user_can_finish_active_session_with_official_totals_calculated_by_backend(): void
+    {
+        $user = User::factory()->create();
+        $template = Template::factory()->for($user)->create(['name' => 'Central Market']);
+        $produce = Sector::factory()->for($template)->create(['name' => 'Produce', 'order' => 1]);
+        $bakery = Sector::factory()->for($template)->create(['name' => 'Bakery', 'order' => 2]);
+        Product::factory()->for($produce)->create(['name' => 'Banana']);
+
+        $shoppingSession = ShoppingSession::factory()->create([
+            'user_id' => $user->id,
+            'template_id' => $template->id,
+            'status' => 'active',
+            'snapshot' => [
+                'name' => 'Central Market',
+                'sectors' => [
+                    ['id' => $produce->id, 'name' => 'Produce', 'order' => 1, 'products' => [['id' => 10, 'name' => 'Banana']]],
+                    ['id' => $bakery->id, 'name' => 'Bakery', 'order' => 2, 'products' => []],
+                ],
+            ],
+            'expires_at' => now()->addHour(),
+        ]);
+
+        $this->assertDatabaseCount('shopping_items', 0);
+
+        $response = $this
+            ->actingAs($user)
+            ->postJson("/api/shopping-sessions/{$shoppingSession->id}/finish", [
+                'total' => 9999,
+                'items' => [
+                    [
+                        'sector_snapshot_id' => $produce->id,
+                        'product_name' => 'Banana',
+                        'price' => 2.50,
+                        'quantity' => 3,
+                        'extra' => false,
+                    ],
+                    [
+                        'sector_snapshot_id' => $bakery->id,
+                        'product_name' => 'Cake',
+                        'price' => 11.25,
+                        'quantity' => 2,
+                        'extra' => true,
+                    ],
+                ],
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.status', 'finished')
+            ->assertJsonPath('data.summary.total', '30.00')
+            ->assertJsonPath('data.summary.sectors.0.subtotal', '7.50')
+            ->assertJsonPath('data.summary.sectors.0.items.0.product_name', 'Banana')
+            ->assertJsonPath('data.summary.sectors.1.subtotal', '22.50')
+            ->assertJsonPath('data.summary.sectors.1.items.0.product_name', 'Cake')
+            ->assertJsonPath('data.summary.sectors.1.items.0.extra', true);
+
+        $this->assertDatabaseHas('shopping_sessions', [
+            'id' => $shoppingSession->id,
+            'status' => 'finished',
+        ]);
+        $this->assertDatabaseHas('shopping_items', [
+            'session_id' => $shoppingSession->id,
+            'sector_name' => 'Produce',
+            'product_name' => 'Banana',
+            'price' => 2.50,
+            'quantity' => 3,
+            'extra' => false,
+        ]);
+        $this->assertDatabaseHas('shopping_items', [
+            'session_id' => $shoppingSession->id,
+            'sector_name' => 'Bakery',
+            'product_name' => 'Cake',
+            'price' => 11.25,
+            'quantity' => 2,
+            'extra' => true,
+        ]);
+        $this->assertDatabaseHas('purchase_histories', [
+            'user_id' => $user->id,
+            'template_name' => 'Central Market',
+            'total' => 30.00,
+        ]);
+        $this->assertDatabaseHas('templates', [
+            'id' => $template->id,
+            'name' => 'Central Market',
+        ]);
+        $this->assertDatabaseHas('sectors', [
+            'id' => $produce->id,
+            'name' => 'Produce',
+        ]);
+        $this->assertDatabaseHas('products', [
+            'sector_id' => $produce->id,
+            'name' => 'Banana',
+        ]);
+        $this->assertDatabaseMissing('products', [
+            'sector_id' => $bakery->id,
+            'name' => 'Cake',
+        ]);
+    }
+
+    public function test_user_can_finish_active_session_with_empty_payload(): void
+    {
+        $user = User::factory()->create();
+        $shoppingSession = ShoppingSession::factory()->create([
+            'user_id' => $user->id,
+            'status' => 'active',
+            'snapshot' => [
+                'name' => 'Central Market',
+                'sectors' => [
+                    ['id' => 10, 'name' => 'Produce', 'order' => 1, 'products' => []],
+                ],
+            ],
+            'expires_at' => now()->addHour(),
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->postJson("/api/shopping-sessions/{$shoppingSession->id}/finish", []);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.status', 'finished')
+            ->assertJsonPath('data.summary.total', '0.00')
+            ->assertJsonPath('data.summary.sectors.0.subtotal', '0.00')
+            ->assertJsonCount(0, 'data.summary.sectors.0.items');
+
+        $this->assertDatabaseHas('shopping_sessions', [
+            'id' => $shoppingSession->id,
+            'status' => 'finished',
+        ]);
+        $this->assertDatabaseCount('shopping_items', 0);
+        $this->assertDatabaseHas('purchase_histories', [
+            'user_id' => $user->id,
+            'template_name' => 'Central Market',
+            'total' => 0,
+        ]);
+    }
+
+    public function test_finish_validates_minimum_price_and_quantity_for_items(): void
+    {
+        $user = User::factory()->create();
+        $shoppingSession = ShoppingSession::factory()->create([
+            'user_id' => $user->id,
+            'status' => 'active',
+            'snapshot' => [
+                'name' => 'Central Market',
+                'sectors' => [
+                    ['id' => 10, 'name' => 'Produce', 'order' => 1, 'products' => []],
+                ],
+            ],
+            'expires_at' => now()->addHour(),
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->postJson("/api/shopping-sessions/{$shoppingSession->id}/finish", [
+                'items' => [
+                    [
+                        'sector_snapshot_id' => 10,
+                        'product_name' => 'Banana',
+                        'price' => 0,
+                        'quantity' => 0,
+                        'extra' => false,
+                    ],
+                ],
+            ]);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'items.0.price',
+                'items.0.quantity',
+            ]);
+
+        $this->assertDatabaseHas('shopping_sessions', [
+            'id' => $shoppingSession->id,
+            'status' => 'active',
+        ]);
+        $this->assertDatabaseCount('shopping_items', 0);
+    }
+
+    public function test_finish_rejects_item_outside_the_session_snapshot(): void
+    {
+        $user = User::factory()->create();
+        $shoppingSession = ShoppingSession::factory()->create([
+            'user_id' => $user->id,
+            'status' => 'active',
+            'snapshot' => [
+                'name' => 'Central Market',
+                'sectors' => [
+                    ['id' => 10, 'name' => 'Produce', 'order' => 1, 'products' => []],
+                ],
+            ],
+            'expires_at' => now()->addHour(),
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->postJson("/api/shopping-sessions/{$shoppingSession->id}/finish", [
+                'items' => [
+                    [
+                        'sector_snapshot_id' => 999,
+                        'product_name' => 'Banana',
+                        'price' => 1.99,
+                        'quantity' => 1,
+                        'extra' => false,
+                    ],
+                ],
+            ]);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['items.0.sector_snapshot_id']);
+
+        $this->assertDatabaseHas('shopping_sessions', [
+            'id' => $shoppingSession->id,
+            'status' => 'active',
+        ]);
+        $this->assertDatabaseCount('shopping_items', 0);
+    }
+
+    public function test_user_cannot_finish_another_users_shopping_session(): void
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $shoppingSession = ShoppingSession::factory()->create([
+            'user_id' => $otherUser->id,
+            'status' => 'active',
+            'snapshot' => [
+                'name' => 'Central Market',
+                'sectors' => [
+                    ['id' => 10, 'name' => 'Produce', 'order' => 1, 'products' => []],
+                ],
+            ],
+            'expires_at' => now()->addHour(),
+        ]);
+
+        $this
+            ->actingAs($user)
+            ->postJson("/api/shopping-sessions/{$shoppingSession->id}/finish", ['items' => []])
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('shopping_sessions', [
+            'id' => $shoppingSession->id,
+            'status' => 'active',
+        ]);
+        $this->assertDatabaseCount('shopping_items', 0);
+    }
+
     public function test_user_cannot_cancel_another_users_shopping_session(): void
     {
         $user = User::factory()->create();
@@ -289,6 +537,63 @@ class ShoppingSessionControllerTest extends TestCase
         ]);
     }
 
+    #[DataProvider('nonActiveShoppingSessionStatuses')]
+    public function test_user_cannot_finish_non_active_shopping_session(string $status): void
+    {
+        $user = User::factory()->create();
+        $shoppingSession = ShoppingSession::factory()->create([
+            'user_id' => $user->id,
+            'status' => $status,
+            'snapshot' => [
+                'name' => 'Central Market',
+                'sectors' => [
+                    ['id' => 10, 'name' => 'Produce', 'order' => 1, 'products' => []],
+                ],
+            ],
+            'expires_at' => now()->addHour(),
+        ]);
+
+        $this
+            ->actingAs($user)
+            ->postJson("/api/shopping-sessions/{$shoppingSession->id}/finish", ['items' => []])
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('shopping_sessions', [
+            'id' => $shoppingSession->id,
+            'status' => $status,
+        ]);
+        $this->assertDatabaseCount('shopping_items', 0);
+        $this->assertDatabaseCount('purchase_histories', 0);
+    }
+
+    public function test_user_cannot_finish_expired_active_shopping_session(): void
+    {
+        $user = User::factory()->create();
+        $shoppingSession = ShoppingSession::factory()->create([
+            'user_id' => $user->id,
+            'status' => 'active',
+            'snapshot' => [
+                'name' => 'Central Market',
+                'sectors' => [
+                    ['id' => 10, 'name' => 'Produce', 'order' => 1, 'products' => []],
+                ],
+            ],
+            'expires_at' => now()->subMinute(),
+        ]);
+
+        $this
+            ->actingAs($user)
+            ->postJson("/api/shopping-sessions/{$shoppingSession->id}/finish", ['items' => []])
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('shopping_sessions', [
+            'id' => $shoppingSession->id,
+            'status' => 'cancelled',
+        ]);
+        $this->assertDatabaseCount('shopping_items', 0);
+        $this->assertDatabaseCount('purchase_histories', 0);
+    }
+
     public function test_shopping_session_routes_require_authentication(): void
     {
         $this
@@ -301,6 +606,10 @@ class ShoppingSessionControllerTest extends TestCase
 
         $this
             ->postJson('/api/shopping-sessions/1/cancel')
+            ->assertUnauthorized();
+
+        $this
+            ->postJson('/api/shopping-sessions/1/finish')
             ->assertUnauthorized();
     }
 

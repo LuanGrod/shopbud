@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: accepted
 
 # Finalizar Shopping Session e persistir Shopping Items oficiais
 
@@ -17,14 +17,14 @@ Implementar a finalizacao oficial de uma Shopping Session ativa. O frontend envi
 
 ## Acceptance criteria
 
-- [ ] Apenas usuario dono finaliza sua propria sessao ativa nao expirada.
-- [ ] Finish rejeita sessao cancelada, finalizada ou expirada.
-- [ ] Item so pode pertencer a Sector existente no Snapshot.
-- [ ] Product avulso e salvo como Shopping Item com `extra=true` dentro de Sector existente no Snapshot.
-- [ ] Nenhum Shopping Item e persistido antes da finalizacao.
-- [ ] Backend recalcula subtotal por Sector e total geral a partir de `price * quantity`.
-- [ ] Finalizacao altera status da sessao para `finished`.
-- [ ] Feature tests cobrem payload valido, vazio, validacoes minimas, extra e nao mutacao do Template.
+- [x] Apenas usuario dono finaliza sua propria sessao ativa nao expirada.
+- [x] Finish rejeita sessao cancelada, finalizada ou expirada.
+- [x] Item so pode pertencer a Sector existente no Snapshot.
+- [x] Product avulso e salvo como Shopping Item com `extra=true` dentro de Sector existente no Snapshot.
+- [x] Nenhum Shopping Item e persistido antes da finalizacao.
+- [x] Backend recalcula subtotal por Sector e total geral a partir de `price * quantity`.
+- [x] Finalizacao altera status da sessao para `finished`.
+- [x] Feature tests cobrem payload valido, vazio, validacoes minimas, extra e nao mutacao do Template.
 
 ## Blocked by
 

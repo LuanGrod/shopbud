@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('shopping_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('session_id')->nullable()->index();
-            $table->string("sector_name", 256);
-            $table->string("product_name", 256);
-            $table->decimal("price");
-            $table->integer("quantity");
-            $table->boolean("extra");
+            $table->foreignId('session_id')->constrained('shopping_sessions')->cascadeOnDelete();
+            $table->string('sector_name', 256);
+            $table->string('product_name', 256);
+            $table->decimal('price', 10, 2);
+            $table->integer('quantity');
+            $table->boolean('extra');
             $table->timestamps();
         });
     }

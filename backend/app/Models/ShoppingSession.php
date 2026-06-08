@@ -6,6 +6,7 @@ use Database\Factories\ShoppingSessionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ShoppingSession extends Model
 {
@@ -36,5 +37,10 @@ class ShoppingSession extends Model
     public function template(): BelongsTo
     {
         return $this->belongsTo(Template::class);
+    }
+
+    public function shoppingItems(): HasMany
+    {
+        return $this->hasMany(ShoppingItem::class, 'session_id');
     }
 }
