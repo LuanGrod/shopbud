@@ -199,7 +199,7 @@ class TemplateControllerTest extends TestCase
             'code' => 'SHARE123',
             'template_id' => $template->id,
             'snapshot' => json_encode(['name' => 'Archived Market']),
-            'expired_at' => now()->addDay(),
+            'expires_at' => now()->addDay(),
             'created_at' => now(),
             'updated_at' => now(),
         ]);

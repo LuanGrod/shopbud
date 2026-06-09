@@ -11,14 +11,14 @@ class SharedTemplate extends Model
         'code',
         'template_id',
         'snapshot',
-        'expired_at',
+        'expires_at',
     ];
 
     protected function casts(): array
     {
         return [
             'snapshot' => 'array',
-            'expired_at' => 'datetime',
+            'expires_at' => 'datetime',
         ];
     }
 

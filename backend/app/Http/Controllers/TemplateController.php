@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTemplateRequest;
 use App\Http\Requests\UpdateTemplateRequest;
 use App\Http\Resources\TemplateResource;
+use App\Models\SharedTemplate;
 use App\Models\Template;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class TemplateController extends Controller
 {
@@ -80,5 +83,59 @@ class TemplateController extends Controller
         $template->delete();
 
         return response()->noContent();
+    }
+
+    public function share(Template $template): JsonResponse
+    {
+        $this->authorize('view', $template);
+
+        $template->load('sectors.products');
+
+        $sharedTemplate = SharedTemplate::query()->create([
+            'template_id' => $template->id,
+            'code' => $this->uniqueShareCode(),
+            'snapshot' => $this->snapshotFrom($template),
+            'expires_at' => now()->addDay(),
+        ]);
+
+        return response()->json([
+            'data' => [
+                'code' => $sharedTemplate->code,
+                'expires_at' => $sharedTemplate->expires_at->toJSON(),
+                'template' => [
+                    'name' => $template->name,
+                    'sectors_count' => $template->sectors->count(),
+                    'products_count' => $template->sectors->sum(fn ($sector): int => $sector->products->count()),
+                ],
+            ],
+        ], 201);
+    }
+
+    private function uniqueShareCode(): string
+    {
+        do {
+            $code = Str::random(40);
+        } while (SharedTemplate::query()->where('code', $code)->exists());
+
+        return $code;
+    }
+
+    /**
+     * @return array{name: string, sectors: array<int, array{id: int, name: string, order: int, products: array<int, array{id: int, name: string}>}>}
+     */
+    private function snapshotFrom(Template $template): array
+    {
+        return [
+            'name' => $template->name,
+            'sectors' => $template->sectors->map(fn ($sector): array => [
+                'id' => $sector->id,
+                'name' => $sector->name,
+                'order' => $sector->order,
+                'products' => $sector->products->map(fn ($product): array => [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                ])->values()->all(),
+            ])->values()->all(),
+        ];
     }
 }

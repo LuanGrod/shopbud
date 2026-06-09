@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SectorController;
+use App\Http\Controllers\SharedTemplateController;
 use App\Http\Controllers\ShoppingSessionController;
 use App\Http\Controllers\TemplateController;
 use Illuminate\Http\Request;
@@ -18,6 +19,8 @@ Route::middleware(['throttle:global', 'auth:sanctum'])->group(function () {
         Route::post('shopping-sessions', [ShoppingSessionController::class, 'store']);
         Route::post('shopping-sessions/{shoppingSession}/cancel', [ShoppingSessionController::class, 'cancel']);
         Route::post('shopping-sessions/{shoppingSession}/finish', [ShoppingSessionController::class, 'finish']);
+        Route::post('shared-templates/import', [SharedTemplateController::class, 'import']);
+        Route::post('templates/{template}/share', [TemplateController::class, 'share']);
         Route::apiResource('templates', TemplateController::class);
         Route::put('templates/{template}/sectors/reorder', [SectorController::class, 'reorder']);
         Route::apiResource('templates.sectors', SectorController::class)->only(['index', 'store', 'update', 'destroy']);

@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('shared_templates', function (Blueprint $table) {
             $table->id();
-            $table->string('code', 256);
+            $table->string('code', 256)->unique();
             $table->foreignId('template_id')->constrained()->cascadeOnDelete();
             $table->json('snapshot');
-            $table->timestamp('expired_at');
+            $table->timestamp('expires_at');
             $table->timestamps();
         });
     }

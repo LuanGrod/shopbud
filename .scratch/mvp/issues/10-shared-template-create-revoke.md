@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: accepted
 
 # Compartilhar Template por Snapshot temporario
 
@@ -15,12 +15,12 @@ Permitir que o usuario gere um codigo temporario para compartilhar um Snapshot d
 
 ## Acceptance criteria
 
-- [ ] Usuario so compartilha Template proprio.
-- [ ] Codigo e unico, nao previsivel e suficiente para importacao posterior.
-- [ ] Shared Template expira 24 horas apos criacao.
-- [ ] Snapshot nao muda quando Template original e editado depois.
-- [ ] Deletar Template original revoga codigos ativos.
-- [ ] Feature tests cobrem criacao, snapshot, expiracao e revogacao por delete.
+- [x] Usuario so compartilha Template proprio.
+- [x] Codigo e unico, nao previsivel e suficiente para importacao posterior.
+- [x] Shared Template expira 24 horas apos criacao.
+- [x] Snapshot nao muda quando Template original e editado depois.
+- [x] Deletar Template original revoga codigos ativos.
+- [x] Feature tests cobrem criacao, snapshot, expiracao e revogacao por delete.
 
 ## Blocked by
 

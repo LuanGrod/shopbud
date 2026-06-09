@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: accepted
 
 # Importar Template a partir de Shared Template valido
 
@@ -15,13 +15,13 @@ Permitir que usuario autenticado importe um Template independente a partir de co
 
 ## Acceptance criteria
 
-- [ ] Importacao exige usuario autenticado.
-- [ ] Codigo inexistente, expirado ou revogado retorna erro apropriado.
-- [ ] Template importado pertence ao usuario importador.
-- [ ] Estrutura importada e independente do dono original e do Shared Template.
-- [ ] Conflito de nome e resolvido de forma previsivel e testada.
-- [ ] Usuario pode importar codigo proprio se nao houver decisao contraria no PRD.
-- [ ] Feature tests cobrem sucesso, expiracao/revogacao, conflito de nome e independencia.
+- [x] Importacao exige usuario autenticado.
+- [x] Codigo inexistente, expirado ou revogado retorna erro apropriado.
+- [x] Template importado pertence ao usuario importador.
+- [x] Estrutura importada e independente do dono original e do Shared Template.
+- [x] Conflito de nome e resolvido de forma previsivel e testada.
+- [x] Usuario pode importar codigo proprio se nao houver decisao contraria no PRD.
+- [x] Feature tests cobrem sucesso, expiracao/revogacao, conflito de nome e independencia.
 
 ## Blocked by
 
