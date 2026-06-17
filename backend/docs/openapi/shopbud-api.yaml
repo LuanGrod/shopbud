@@ -1,0 +1,1397 @@
+openapi: 3.1.0
+info:
+  title: 'Shopbud API'
+  version: 1.0.0
+  description: 'Backend API contract for the implemented MVP endpoints.'
+servers:
+  - url: /
+tags:
+  - name: Auth
+  - name: User
+  - name: Templates
+  - name: Sectors
+  - name: Products
+  - name: 'Shopping Sessions'
+  - name: 'Shared Templates'
+paths:
+  /api/auth/register:
+    post:
+      tags:
+        - Auth
+      summary: 'Register a user'
+      operationId: registerUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        201:
+          description: 'User registered and token issued.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+        422:
+          $ref: '#/components/responses/ValidationFailed'
+  /api/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: 'Log in'
+      operationId: loginUser
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        200:
+          description: 'Token issued.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        401:
+          description: 'Invalid credentials.'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                  - msg
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  msg:
+                    type: string
+                    example: 'Usuário não encontrado'
+        422:
+          $ref: '#/components/responses/ValidationFailed'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+  /api/auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: 'Log out current token'
+      operationId: logoutUser
+      security:
+        -
+          bearerAuth: []
+      responses:
+        200:
+          description: 'Token revoked.'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                  - msg
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  msg:
+                    type: string
+                    example: 'Logout realizado com sucesso'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+  /api/user:
+    get:
+      tags:
+        - User
+      summary: 'Get authenticated user'
+      operationId: getAuthenticatedUser
+      security:
+        -
+          bearerAuth: []
+      responses:
+        200:
+          description: 'Authenticated user.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+  /api/templates:
+    get:
+      tags:
+        - Templates
+      summary: 'List Templates'
+      operationId: listTemplates
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PerPage'
+        -
+          name: sort
+          in: query
+          schema:
+            type: string
+            enum:
+              - id
+              - name
+          description: 'Sort field. Defaults to updated_at descending when omitted.'
+        -
+          name: direction
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+        -
+          name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        200:
+          description: 'Paginated lightweight Template list.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateListResponse'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+    post:
+      tags:
+        - Templates
+      summary: 'Create Template'
+      operationId: createTemplate
+      security:
+        -
+          bearerAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/TemplateName'
+      responses:
+        201:
+          description: 'Template created.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateStored'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        422:
+          $ref: '#/components/responses/ValidationFailed'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+  '/api/templates/{template}':
+    get:
+      tags:
+        - Templates
+      summary: 'Get Template detail'
+      operationId: getTemplate
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+      responses:
+        200:
+          description: 'Template with ordered Sectors and Products.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateDetailResponse'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+    patch:
+      tags:
+        - Templates
+      summary: 'Rename Template'
+      operationId: updateTemplate
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+      requestBody:
+        $ref: '#/components/requestBodies/TemplateName'
+      responses:
+        200:
+          description: 'Template renamed.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateResponse'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        422:
+          $ref: '#/components/responses/ValidationFailed'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+    put:
+      tags:
+        - Templates
+      summary: 'Replace Template name'
+      operationId: replaceTemplate
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+      requestBody:
+        $ref: '#/components/requestBodies/TemplateName'
+      responses:
+        200:
+          description: 'Template renamed.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateResponse'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        422:
+          $ref: '#/components/responses/ValidationFailed'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+    delete:
+      tags:
+        - Templates
+      summary: 'Delete Template'
+      operationId: deleteTemplate
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+      responses:
+        204:
+          description: 'Template deleted.'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+  '/api/templates/{template}/share':
+    post:
+      tags:
+        - 'Shared Templates'
+      summary: 'Create a temporary Shared Template code'
+      operationId: createSharedTemplate
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+      responses:
+        201:
+          description: 'Shared Template code created.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SharedTemplateResponse'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+  '/api/templates/{template}/sectors':
+    get:
+      tags:
+        - Sectors
+      summary: 'List Sectors in route order'
+      operationId: listSectors
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+      responses:
+        200:
+          description: 'Ordered Sectors.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SectorCollectionResponse'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+    post:
+      tags:
+        - Sectors
+      summary: 'Create Sector at the end of the route'
+      operationId: createSector
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+      requestBody:
+        $ref: '#/components/requestBodies/Name255'
+      responses:
+        201:
+          description: 'Sector created.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SectorResponse'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        422:
+          $ref: '#/components/responses/ValidationFailed'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+  '/api/templates/{template}/sectors/reorder':
+    put:
+      tags:
+        - Sectors
+      summary: 'Reorder Sectors'
+      operationId: reorderSectors
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReorderSectorsRequest'
+      responses:
+        200:
+          description: 'Sectors returned in the new normalized order.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SectorCollectionResponse'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        422:
+          $ref: '#/components/responses/ValidationFailed'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+  '/api/templates/{template}/sectors/{sector}':
+    patch:
+      tags:
+        - Sectors
+      summary: 'Rename Sector'
+      operationId: updateSector
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+        - $ref: '#/components/parameters/SectorId'
+      requestBody:
+        $ref: '#/components/requestBodies/Name255'
+      responses:
+        200:
+          description: 'Sector renamed.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SectorResponse'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        422:
+          $ref: '#/components/responses/ValidationFailed'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+    put:
+      tags:
+        - Sectors
+      summary: 'Replace Sector name'
+      operationId: replaceSector
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+        - $ref: '#/components/parameters/SectorId'
+      requestBody:
+        $ref: '#/components/requestBodies/Name255'
+      responses:
+        200:
+          description: 'Sector renamed.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SectorResponse'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        422:
+          $ref: '#/components/responses/ValidationFailed'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+    delete:
+      tags:
+        - Sectors
+      summary: 'Delete Sector and Products'
+      operationId: deleteSector
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+        - $ref: '#/components/parameters/SectorId'
+      responses:
+        204:
+          description: 'Sector deleted.'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+  '/api/templates/{template}/sectors/{sector}/products':
+    get:
+      tags:
+        - Products
+      summary: 'List Products in creation order'
+      operationId: listProducts
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+        - $ref: '#/components/parameters/SectorId'
+      responses:
+        200:
+          description: Products.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCollectionResponse'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+    post:
+      tags:
+        - Products
+      summary: 'Create Product'
+      operationId: createProduct
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+        - $ref: '#/components/parameters/SectorId'
+      requestBody:
+        $ref: '#/components/requestBodies/Name255'
+      responses:
+        201:
+          description: 'Product created.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        422:
+          $ref: '#/components/responses/ValidationFailed'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+  '/api/templates/{template}/sectors/{sector}/products/{product}':
+    patch:
+      tags:
+        - Products
+      summary: 'Rename Product'
+      operationId: updateProduct
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+        - $ref: '#/components/parameters/SectorId'
+        - $ref: '#/components/parameters/ProductId'
+      requestBody:
+        $ref: '#/components/requestBodies/Name255'
+      responses:
+        200:
+          description: 'Product renamed.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        422:
+          $ref: '#/components/responses/ValidationFailed'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+    put:
+      tags:
+        - Products
+      summary: 'Replace Product name'
+      operationId: replaceProduct
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+        - $ref: '#/components/parameters/SectorId'
+        - $ref: '#/components/parameters/ProductId'
+      requestBody:
+        $ref: '#/components/requestBodies/Name255'
+      responses:
+        200:
+          description: 'Product renamed.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        422:
+          $ref: '#/components/responses/ValidationFailed'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+    delete:
+      tags:
+        - Products
+      summary: 'Delete Product'
+      operationId: deleteProduct
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+        - $ref: '#/components/parameters/SectorId'
+        - $ref: '#/components/parameters/ProductId'
+      responses:
+        204:
+          description: 'Product deleted.'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+  /api/shopping-sessions/current:
+    get:
+      tags:
+        - 'Shopping Sessions'
+      summary: 'Get current active Shopping Session'
+      operationId: getCurrentShoppingSession
+      security:
+        -
+          bearerAuth: []
+      responses:
+        200:
+          description: 'Active Shopping Session.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingSessionResponse'
+        204:
+          description: 'No active Shopping Session.'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+  /api/shopping-sessions:
+    post:
+      tags:
+        - 'Shopping Sessions'
+      summary: 'Start Shopping Session'
+      operationId: startShoppingSession
+      security:
+        -
+          bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartShoppingSessionRequest'
+      responses:
+        201:
+          description: 'New active Shopping Session created.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingSessionResponse'
+        200:
+          description: 'Existing unexpired active Shopping Session returned.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingSessionResponse'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        422:
+          $ref: '#/components/responses/ValidationFailed'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+  '/api/shopping-sessions/{shoppingSession}/cancel':
+    post:
+      tags:
+        - 'Shopping Sessions'
+      summary: 'Cancel Shopping Session'
+      operationId: cancelShoppingSession
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ShoppingSessionId'
+      responses:
+        200:
+          description: 'Shopping Session cancelled.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingSessionResponse'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+  '/api/shopping-sessions/{shoppingSession}/finish':
+    post:
+      tags:
+        - 'Shopping Sessions'
+      summary: 'Finish Shopping Session'
+      operationId: finishShoppingSession
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ShoppingSessionId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinishShoppingSessionRequest'
+      responses:
+        200:
+          description: 'Shopping Session finished and official totals calculated.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingSessionResponse'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        422:
+          $ref: '#/components/responses/ValidationFailed'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+  /api/shared-templates/import:
+    post:
+      tags:
+        - 'Shared Templates'
+      summary: 'Import Template from Shared Template code'
+      operationId: importSharedTemplate
+      security:
+        -
+          bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImportSharedTemplateRequest'
+      responses:
+        201:
+          description: 'Independent Template imported from Snapshot.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateDetailResponse'
+        401:
+          $ref: '#/components/responses/Unauthenticated'
+        422:
+          $ref: '#/components/responses/ValidationFailed'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: 'Sanctum token'
+  parameters:
+    PerPage:
+      name: per-page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+    TemplateId:
+      name: template
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    SectorId:
+      name: sector
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    ProductId:
+      name: product
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    ShoppingSessionId:
+      name: shoppingSession
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+  requestBodies:
+    TemplateName:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+            properties:
+              name:
+                type: string
+                maxLength: 50
+                example: 'Central Market'
+    Name255:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+            properties:
+              name:
+                type: string
+                maxLength: 255
+                example: Produce
+  responses:
+    Unauthenticated:
+      description: 'Authentication is required.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Unauthenticated.
+    Forbidden:
+      description: 'The authenticated user is not authorized for this resource or action.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: 'This action is unauthorized.'
+    NotFound:
+      description: 'Resource not found.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: 'Not Found'
+    ValidationFailed:
+      description: 'Validation failed.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationError'
+          example:
+            message: 'The given data was invalid.'
+            errors:
+              name:
+                - 'The name field is required.'
+    TooManyRequests:
+      description: 'Too many requests.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: 'Too Many Attempts.'
+  schemas:
+    RegisterRequest:
+      type: object
+      required:
+        - name
+        - email
+        - password
+        - password_confirmation
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+          format: password
+        password_confirmation:
+          type: string
+          minLength: 8
+          format: password
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+          format: password
+    RegisterResponse:
+      type: object
+      required:
+        - success
+        - user
+        - token
+      properties:
+        success:
+          type: boolean
+        user:
+          $ref: '#/components/schemas/User'
+        token:
+          type: string
+    LoginResponse:
+      type: object
+      required:
+        - success
+        - token
+      properties:
+        success:
+          type: boolean
+        token:
+          type: string
+    User:
+      type: object
+      required:
+        - id
+        - name
+        - email
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        email_verified_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    TemplateStored:
+      type: object
+      required:
+        - id
+        - user_id
+        - name
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        name:
+          type: string
+          maxLength: 50
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    TemplateListResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplateListItem'
+        links:
+          $ref: '#/components/schemas/PaginationLinks'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    TemplateListItem:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          maxLength: 50
+    TemplateDetailResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/TemplateStructure'
+    TemplateResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/Template'
+    Template:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          maxLength: 50
+        sectors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sector'
+    TemplateStructure:
+      type: object
+      required:
+        - id
+        - name
+        - sectors
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          maxLength: 50
+        sectors:
+          type: array
+          items:
+            $ref: '#/components/schemas/SectorStructure'
+    SectorCollectionResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sector'
+    SectorResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/Sector'
+    Sector:
+      type: object
+      required:
+        - id
+        - name
+        - order
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          maxLength: 255
+        order:
+          type: integer
+          minimum: 1
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+    SectorStructure:
+      type: object
+      required:
+        - id
+        - name
+        - order
+        - products
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          maxLength: 255
+        order:
+          type: integer
+          minimum: 1
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+    ProductCollectionResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+    ProductResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/Product'
+    Product:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          maxLength: 255
+    ReorderSectorsRequest:
+      type: object
+      required:
+        - ids
+      properties:
+        ids:
+          type: array
+          description: 'Must include every Sector ID from the Template exactly once.'
+          items:
+            type: integer
+          uniqueItems: true
+    StartShoppingSessionRequest:
+      type: object
+      required:
+        - template_id
+      properties:
+        template_id:
+          type: integer
+          minimum: 1
+    FinishShoppingSessionRequest:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FinishShoppingItem'
+    FinishShoppingItem:
+      type: object
+      required:
+        - sector_snapshot_id
+        - product_name
+        - price
+        - quantity
+        - extra
+      properties:
+        sector_snapshot_id:
+          type: integer
+          description: 'Sector id copied into the Shopping Session Snapshot.'
+        product_name:
+          type: string
+          maxLength: 256
+        price:
+          type: number
+          format: float
+          minimum: 0.01
+        quantity:
+          type: integer
+          minimum: 1
+        extra:
+          type: boolean
+    ShoppingSessionResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/ShoppingSession'
+    ShoppingSession:
+      type: object
+      required:
+        - id
+        - status
+        - template_id
+        - expires_at
+        - snapshot
+      properties:
+        id:
+          type: integer
+        status:
+          type: string
+          enum:
+            - active
+            - cancelled
+            - finished
+        template_id:
+          type:
+            - integer
+            - 'null'
+        expires_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        snapshot:
+          $ref: '#/components/schemas/Snapshot'
+        summary:
+          $ref: '#/components/schemas/ShoppingSessionSummary'
+    Snapshot:
+      type: object
+      required:
+        - name
+        - sectors
+      properties:
+        name:
+          type: string
+        sectors:
+          type: array
+          items:
+            $ref: '#/components/schemas/SnapshotSector'
+    SnapshotSector:
+      type: object
+      required:
+        - id
+        - name
+        - order
+        - products
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        order:
+          type: integer
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+    ShoppingSessionSummary:
+      type: object
+      required:
+        - sectors
+        - total
+      properties:
+        sectors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShoppingSessionSummarySector'
+        total:
+          type: string
+          pattern: '^\d+\.\d{2}$'
+          example: '30.00'
+    ShoppingSessionSummarySector:
+      type: object
+      required:
+        - sector_snapshot_id
+        - name
+        - subtotal
+        - items
+      properties:
+        sector_snapshot_id:
+          type: integer
+        name:
+          type: string
+        subtotal:
+          type: string
+          pattern: '^\d+\.\d{2}$'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShoppingSessionSummaryItem'
+    ShoppingSessionSummaryItem:
+      type: object
+      required:
+        - product_name
+        - price
+        - quantity
+        - extra
+        - subtotal
+      properties:
+        product_name:
+          type: string
+        price:
+          type: string
+          pattern: '^\d+\.\d{2}$'
+        quantity:
+          type: integer
+        extra:
+          type: boolean
+        subtotal:
+          type: string
+          pattern: '^\d+\.\d{2}$'
+    SharedTemplateResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - code
+            - expires_at
+            - template
+          properties:
+            code:
+              type: string
+              minLength: 32
+              maxLength: 256
+            expires_at:
+              type: string
+              format: date-time
+            template:
+              type: object
+              required:
+                - name
+                - sectors_count
+                - products_count
+              properties:
+                name:
+                  type: string
+                sectors_count:
+                  type: integer
+                  minimum: 0
+                products_count:
+                  type: integer
+                  minimum: 0
+    ImportSharedTemplateRequest:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          maxLength: 256
+    PaginationLinks:
+      type: object
+      additionalProperties: true
+    PaginationMeta:
+      type: object
+      additionalProperties: true
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+    ValidationError:
+      type: object
+      required:
+        - message
+        - errors
+      properties:
+        message:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
