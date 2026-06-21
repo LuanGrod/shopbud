@@ -9,12 +9,25 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@hookform/resolvers": "^5.4.0",
+    "@tanstack/react-query": "^5.101.0",
+    "dexie": "^4.4.4",
+    "dexie-react-hooks": "^4.4.0",
+    "lucide-react": "^1.21.0",
     "next": "16.2.6",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "react-hook-form": "^7.80.0",
+    "sonner": "^2.0.7",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@tanstack/eslint-plugin-query": "^5.101.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

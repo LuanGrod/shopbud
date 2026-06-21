@@ -19,7 +19,7 @@ ShopBud é um aplicativo que ajuda você a organizar suas compras de supermercad
 ## Stack Tecnológico
 
 - **Backend**: Laravel 11 (PHP 8.4) com Laravel Sanctum
-- **Frontend**: Next.js 15 (Node 20) com TypeScript e Tailwind CSS
+- **Frontend**: Next.js 16 (Node 20) com TypeScript e Tailwind CSS
 - **Banco de Dados**: MySQL 8.0
 - **Containerização**: Docker Compose
 
