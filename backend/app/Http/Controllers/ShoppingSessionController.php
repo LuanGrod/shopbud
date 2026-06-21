@@ -10,24 +10,25 @@ use App\Models\ShoppingItem;
 use App\Models\ShoppingSession;
 use App\Models\Template;
 use App\Models\User;
+use App\Support\ApiResponse;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class ShoppingSessionController extends Controller
 {
-    public function current(Request $request): ShoppingSessionResource|Response
+    public function current(Request $request): ShoppingSessionResource|JsonResponse
     {
         $activeSession = $this->activeSessionFor($request->user()->id);
 
         if ($activeSession === null) {
-            return response()->noContent();
+            return ApiResponse::success(message: 'Nenhuma compra ativa encontrada.');
         }
 
-        return new ShoppingSessionResource($activeSession);
+        return (new ShoppingSessionResource($activeSession))
+            ->additional(ApiResponse::resourceMeta());
     }
 
     public function store(StoreShoppingSessionRequest $request): JsonResponse
@@ -40,7 +41,7 @@ class ShoppingSessionController extends Controller
 
         if ($template->sectors->isEmpty()) {
             throw ValidationException::withMessages([
-                'template_id' => 'The selected template must have at least one sector.',
+                'template_id' => 'O template selecionado deve ter pelo menos um setor.',
             ]);
         }
 
@@ -69,6 +70,9 @@ class ShoppingSessionController extends Controller
         });
 
         return (new ShoppingSessionResource($shoppingSession))
+            ->additional(ApiResponse::resourceMeta(
+                $wasCreated ? 'Compra iniciada com sucesso.' : 'Compra ativa recuperada com sucesso.'
+            ))
             ->response()
             ->setStatusCode($wasCreated ? 201 : 200);
     }
@@ -81,7 +85,8 @@ class ShoppingSessionController extends Controller
             'status' => 'cancelled',
         ]);
 
-        return new ShoppingSessionResource($shoppingSession);
+        return (new ShoppingSessionResource($shoppingSession))
+            ->additional(ApiResponse::resourceMeta('Compra cancelada com sucesso.'));
     }
 
     public function finish(FinishShoppingSessionRequest $request, ShoppingSession $shoppingSession): ShoppingSessionResource
@@ -135,7 +140,8 @@ class ShoppingSessionController extends Controller
             return $shoppingSession;
         });
 
-        return new ShoppingSessionResource($shoppingSession);
+        return (new ShoppingSessionResource($shoppingSession))
+            ->additional(ApiResponse::resourceMeta('Compra finalizada com sucesso.'));
     }
 
     /**
@@ -190,7 +196,7 @@ class ShoppingSessionController extends Controller
         foreach ($items as $index => $item) {
             if (! $sectorsById->has($item['sector_snapshot_id'])) {
                 throw ValidationException::withMessages([
-                    "items.{$index}.sector_snapshot_id" => 'The selected sector must exist in the shopping session snapshot.',
+                    "items.{$index}.sector_snapshot_id" => 'O setor selecionado deve existir no snapshot da compra.',
                 ]);
             }
         }

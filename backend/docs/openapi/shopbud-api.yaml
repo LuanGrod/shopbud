@@ -57,21 +57,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/LoginResponse'
         401:
-          description: 'Invalid credentials.'
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - success
-                  - msg
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  msg:
-                    type: string
-                    example: 'Usuário não encontrado'
+          $ref: '#/components/responses/InvalidCredentials'
         422:
           $ref: '#/components/responses/ValidationFailed'
         429:
@@ -91,17 +77,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required:
-                  - success
-                  - msg
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  msg:
-                    type: string
-                    example: 'Logout realizado com sucesso'
+                $ref: '#/components/schemas/SuccessNullResponse'
         401:
           $ref: '#/components/responses/Unauthenticated'
   /api/user:
@@ -119,7 +95,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserResponse'
         401:
           $ref: '#/components/responses/Unauthenticated'
         429:
@@ -286,8 +262,12 @@ paths:
       parameters:
         - $ref: '#/components/parameters/TemplateId'
       responses:
-        204:
+        200:
           description: 'Template deleted.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessNullResponse'
         401:
           $ref: '#/components/responses/Unauthenticated'
         403:
@@ -400,7 +380,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SectorCollectionResponse'
+                $ref: '#/components/schemas/ReorderSectorsResponse'
         401:
           $ref: '#/components/responses/Unauthenticated'
         403:
@@ -484,8 +464,12 @@ paths:
         - $ref: '#/components/parameters/TemplateId'
         - $ref: '#/components/parameters/SectorId'
       responses:
-        204:
+        200:
           description: 'Sector deleted.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessNullResponse'
         401:
           $ref: '#/components/responses/Unauthenticated'
         403:
@@ -627,8 +611,12 @@ paths:
         - $ref: '#/components/parameters/SectorId'
         - $ref: '#/components/parameters/ProductId'
       responses:
-        204:
+        200:
           description: 'Product deleted.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessNullResponse'
         401:
           $ref: '#/components/responses/Unauthenticated'
         403:
@@ -648,13 +636,11 @@ paths:
           bearerAuth: []
       responses:
         200:
-          description: 'Active Shopping Session.'
+          description: 'Active Shopping Session, or null data when there is no active Shopping Session.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ShoppingSessionResponse'
-        204:
-          description: 'No active Shopping Session.'
+                $ref: '#/components/schemas/CurrentShoppingSessionResponse'
         401:
           $ref: '#/components/responses/Unauthenticated'
         429:
@@ -863,7 +849,19 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
           example:
-            message: Unauthenticated.
+            success: false
+            message: 'Autenticação necessária.'
+            data: null
+    InvalidCredentials:
+      description: 'Invalid login credentials.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            success: false
+            message: 'Credenciais inválidas.'
+            data: null
     Forbidden:
       description: 'The authenticated user is not authorized for this resource or action.'
       content:
@@ -871,7 +869,9 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
           example:
-            message: 'This action is unauthorized.'
+            success: false
+            message: 'Você não tem permissão para acessar este recurso.'
+            data: null
     NotFound:
       description: 'Resource not found.'
       content:
@@ -879,7 +879,9 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
           example:
-            message: 'Not Found'
+            success: false
+            message: 'Recurso não encontrado.'
+            data: null
     ValidationFailed:
       description: 'Validation failed.'
       content:
@@ -887,18 +889,23 @@ components:
           schema:
             $ref: '#/components/schemas/ValidationError'
           example:
-            message: 'The given data was invalid.'
+            success: false
+            message: 'Os dados enviados são inválidos.'
+            data: null
             errors:
               name:
-                - 'The name field is required.'
+                - 'O campo nome é obrigatório.'
     TooManyRequests:
       description: 'Too many requests.'
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: '#/components/schemas/TooManyRequestsError'
           example:
-            message: 'Too Many Attempts.'
+            success: false
+            message: 'Muitas tentativas. Aguarde um pouco antes de tentar novamente.'
+            data: null
+            retry_after_seconds: 60
   schemas:
     RegisterRequest:
       type: object
@@ -939,25 +946,77 @@ components:
       type: object
       required:
         - success
-        - user
-        - token
+        - message
+        - data
       properties:
         success:
           type: boolean
-        user:
-          $ref: '#/components/schemas/User'
-        token:
+          const: true
+        message:
           type: string
+          example: 'Cadastro realizado com sucesso.'
+        data:
+          type: object
+          required:
+            - user
+            - token
+          properties:
+            user:
+              $ref: '#/components/schemas/User'
+            token:
+              type: string
     LoginResponse:
       type: object
       required:
         - success
-        - token
+        - message
+        - data
       properties:
         success:
           type: boolean
-        token:
+          const: true
+        message:
           type: string
+          example: 'Login realizado com sucesso.'
+        data:
+          type: object
+          required:
+            - token
+          properties:
+            token:
+              type: string
+    SuccessNullResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type:
+            - string
+            - 'null'
+        data:
+          type: 'null'
+    UserResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type:
+            - string
+            - 'null'
+        data:
+          $ref: '#/components/schemas/User'
     User:
       type: object
       required:
@@ -987,28 +1046,32 @@ components:
     TemplateStored:
       type: object
       required:
-        - id
-        - user_id
-        - name
+        - success
+        - message
+        - data
       properties:
-        id:
-          type: integer
-        user_id:
-          type: integer
-        name:
+        success:
+          type: boolean
+          const: true
+        message:
           type: string
-          maxLength: 50
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
+          example: 'Template criado com sucesso.'
+        data:
+          $ref: '#/components/schemas/Template'
     TemplateListResponse:
       type: object
       required:
+        - success
+        - message
         - data
       properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type:
+            - string
+            - 'null'
         data:
           type: array
           items:
@@ -1031,15 +1094,33 @@ components:
     TemplateDetailResponse:
       type: object
       required:
+        - success
+        - message
         - data
       properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type:
+            - string
+            - 'null'
         data:
           $ref: '#/components/schemas/TemplateStructure'
     TemplateResponse:
       type: object
       required:
+        - success
+        - message
         - data
       properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type:
+            - string
+            - 'null'
         data:
           $ref: '#/components/schemas/Template'
     Template:
@@ -1076,17 +1157,43 @@ components:
     SectorCollectionResponse:
       type: object
       required:
+        - success
+        - message
         - data
       properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type:
+            - string
+            - 'null'
         data:
           type: array
           items:
             $ref: '#/components/schemas/Sector'
+    ReorderSectorsResponse:
+      allOf:
+        - $ref: '#/components/schemas/SectorCollectionResponse'
+        - type: object
+          properties:
+            message:
+              type: string
+              const: 'Setores reordenados com sucesso.'
     SectorResponse:
       type: object
       required:
+        - success
+        - message
         - data
       properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type:
+            - string
+            - 'null'
         data:
           $ref: '#/components/schemas/Sector'
     Sector:
@@ -1104,10 +1211,6 @@ components:
         order:
           type: integer
           minimum: 1
-        products:
-          type: array
-          items:
-            $ref: '#/components/schemas/Product'
     SectorStructure:
       type: object
       required:
@@ -1131,8 +1234,17 @@ components:
     ProductCollectionResponse:
       type: object
       required:
+        - success
+        - message
         - data
       properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type:
+            - string
+            - 'null'
         data:
           type: array
           items:
@@ -1140,8 +1252,17 @@ components:
     ProductResponse:
       type: object
       required:
+        - success
+        - message
         - data
       properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type:
+            - string
+            - 'null'
         data:
           $ref: '#/components/schemas/Product'
     Product:
@@ -1208,10 +1329,38 @@ components:
     ShoppingSessionResponse:
       type: object
       required:
+        - success
+        - message
         - data
       properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type:
+            - string
+            - 'null'
         data:
           $ref: '#/components/schemas/ShoppingSession'
+    CurrentShoppingSessionResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type:
+            - string
+            - 'null'
+          example: 'Nenhuma compra ativa encontrada.'
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/ShoppingSession'
+            - type: 'null'
     ShoppingSession:
       type: object
       required:
@@ -1329,8 +1478,16 @@ components:
     SharedTemplateResponse:
       type: object
       required:
+        - success
+        - message
         - data
       properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+          example: 'Template compartilhado com sucesso.'
         data:
           type: object
           required:
@@ -1377,18 +1534,50 @@ components:
     Error:
       type: object
       required:
+        - success
         - message
+        - data
       properties:
+        success:
+          type: boolean
+          const: false
         message:
           type: string
+        data:
+          type: 'null'
+    TooManyRequestsError:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - retry_after_seconds
+      properties:
+        success:
+          type: boolean
+          const: false
+        message:
+          type: string
+        data:
+          type: 'null'
+        retry_after_seconds:
+          type: integer
+          minimum: 1
     ValidationError:
       type: object
       required:
+        - success
         - message
+        - data
         - errors
       properties:
+        success:
+          type: boolean
+          const: false
         message:
           type: string
+        data:
+          type: 'null'
         errors:
           type: object
           additionalProperties:

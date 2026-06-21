@@ -38,6 +38,9 @@ class SharedTemplateControllerTest extends TestCase
                 ->where('data.template.name', 'Central Market')
                 ->where('data.template.sectors_count', 1)
                 ->where('data.template.products_count', 2)
+                ->where('success', true)
+                ->where('message', 'Template compartilhado com sucesso.')
+                ->etc()
             );
     }
 
@@ -181,7 +184,9 @@ class SharedTemplateControllerTest extends TestCase
         $this
             ->actingAs($user)
             ->deleteJson("/api/templates/{$template->id}")
-            ->assertNoContent();
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data', null);
 
         $this->assertDatabaseMissing('shared_templates', [
             'code' => $code,
@@ -260,7 +265,9 @@ class SharedTemplateControllerTest extends TestCase
         $this
             ->actingAs($owner)
             ->deleteJson("/api/templates/{$template->id}")
-            ->assertNoContent();
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data', null);
 
         foreach (['MISSING-CODE', $expiredSharedTemplate->code, $revokedCode] as $code) {
             $this
@@ -340,7 +347,9 @@ class SharedTemplateControllerTest extends TestCase
         $this
             ->actingAs($owner)
             ->deleteJson("/api/templates/{$template->id}")
-            ->assertNoContent();
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data', null);
 
         $this->assertDatabaseMissing('shared_templates', ['code' => $code]);
 

@@ -8,9 +8,9 @@ use App\Http\Requests\UpdateSectorRequest;
 use App\Http\Resources\SectorResource;
 use App\Models\Sector;
 use App\Models\Template;
+use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 
 class SectorController extends Controller
@@ -19,7 +19,8 @@ class SectorController extends Controller
     {
         $this->authorize('viewAny', [Sector::class, $template]);
 
-        return SectorResource::collection($template->sectors()->get());
+        return SectorResource::collection($template->sectors()->get())
+            ->additional(ApiResponse::resourceMeta());
     }
 
     public function store(StoreSectorRequest $request, Template $template): JsonResponse
@@ -31,7 +32,10 @@ class SectorController extends Controller
             'order' => ((int) $template->sectors()->max('order')) + 1,
         ]);
 
-        return (new SectorResource($sector))->response()->setStatusCode(201);
+        return (new SectorResource($sector))
+            ->additional(ApiResponse::resourceMeta('Setor criado com sucesso.'))
+            ->response()
+            ->setStatusCode(201);
     }
 
     public function update(UpdateSectorRequest $request, Template $template, Sector $sector): SectorResource
@@ -40,16 +44,17 @@ class SectorController extends Controller
 
         $sector->update($request->validated());
 
-        return new SectorResource($sector);
+        return (new SectorResource($sector))
+            ->additional(ApiResponse::resourceMeta('Setor atualizado com sucesso.'));
     }
 
-    public function destroy(Template $template, Sector $sector): Response
+    public function destroy(Template $template, Sector $sector): JsonResponse
     {
         $this->authorize('delete', $sector);
 
         $sector->delete();
 
-        return response()->noContent();
+        return ApiResponse::success(message: 'Setor removido com sucesso.');
     }
 
     public function reorder(ReorderSectorsRequest $request, Template $template): AnonymousResourceCollection
@@ -64,6 +69,7 @@ class SectorController extends Controller
             }
         });
 
-        return SectorResource::collection($template->sectors()->get());
+        return SectorResource::collection($template->sectors()->get())
+            ->additional(ApiResponse::resourceMeta('Setores reordenados com sucesso.'));
     }
 }

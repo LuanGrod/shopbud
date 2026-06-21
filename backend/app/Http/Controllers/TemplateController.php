@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateTemplateRequest;
 use App\Http\Resources\TemplateResource;
 use App\Models\SharedTemplate;
 use App\Models\Template;
+use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -32,7 +33,8 @@ class TemplateController extends Controller
                 fn ($query) => $query->latest('updated_at')
             )->paginate($perPage);
 
-        return TemplateResource::collection($templates);
+        return TemplateResource::collection($templates)
+            ->additional(ApiResponse::resourceMeta());
     }
 
     /**
@@ -46,7 +48,10 @@ class TemplateController extends Controller
             $request->validated()
         );
 
-        return response()->json($template, 201);
+        return (new TemplateResource($template))
+            ->additional(ApiResponse::resourceMeta('Template criado com sucesso.'))
+            ->response()
+            ->setStatusCode(201);
     }
 
     /**
@@ -58,7 +63,8 @@ class TemplateController extends Controller
 
         $template->load('sectors.products');
 
-        return new TemplateResource($template);
+        return (new TemplateResource($template))
+            ->additional(ApiResponse::resourceMeta());
     }
 
     /**
@@ -70,7 +76,8 @@ class TemplateController extends Controller
 
         $template->update($request->validated());
 
-        return new TemplateResource($template);
+        return (new TemplateResource($template))
+            ->additional(ApiResponse::resourceMeta('Template atualizado com sucesso.'));
     }
 
     /**
@@ -82,7 +89,7 @@ class TemplateController extends Controller
 
         $template->delete();
 
-        return response()->noContent();
+        return ApiResponse::success(message: 'Template removido com sucesso.');
     }
 
     public function share(Template $template): JsonResponse
@@ -98,17 +105,15 @@ class TemplateController extends Controller
             'expires_at' => now()->addDay(),
         ]);
 
-        return response()->json([
-            'data' => [
-                'code' => $sharedTemplate->code,
-                'expires_at' => $sharedTemplate->expires_at->toJSON(),
-                'template' => [
-                    'name' => $template->name,
-                    'sectors_count' => $template->sectors->count(),
-                    'products_count' => $template->sectors->sum(fn ($sector): int => $sector->products->count()),
-                ],
+        return ApiResponse::success([
+            'code' => $sharedTemplate->code,
+            'expires_at' => $sharedTemplate->expires_at->toJSON(),
+            'template' => [
+                'name' => $template->name,
+                'sectors_count' => $template->sectors->count(),
+                'products_count' => $template->sectors->sum(fn ($sector): int => $sector->products->count()),
             ],
-        ], 201);
+        ], 'Template compartilhado com sucesso.', 201);
     }
 
     private function uniqueShareCode(): string

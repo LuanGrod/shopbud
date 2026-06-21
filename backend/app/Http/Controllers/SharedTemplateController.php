@@ -7,6 +7,7 @@ use App\Http\Resources\TemplateResource;
 use App\Models\SharedTemplate;
 use App\Models\Template;
 use App\Models\User;
+use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -26,7 +27,7 @@ class SharedTemplateController extends Controller
 
         if (! $sharedTemplate) {
             throw ValidationException::withMessages([
-                'code' => __('The selected code is invalid.'),
+                'code' => 'O código informado é inválido.',
             ]);
         }
 
@@ -54,6 +55,7 @@ class SharedTemplateController extends Controller
         $template->load('sectors.products');
 
         return (new TemplateResource($template))
+            ->additional(ApiResponse::resourceMeta('Template importado com sucesso.'))
             ->response()
             ->setStatusCode(201);
     }

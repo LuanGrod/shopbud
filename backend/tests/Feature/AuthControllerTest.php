@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
 use Tests\TestCase;
 
 class AuthControllerTest extends TestCase
@@ -16,10 +17,10 @@ class AuthControllerTest extends TestCase
     {
         // Arrange
         $data = [
-            "name" => "User Test",
-            "email" => "user@email.com",
-            "password" => "password123",
-            "password_confirmation" => "password123"
+            'name' => 'User Test',
+            'email' => 'user@email.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
         ];
 
         // Act
@@ -28,12 +29,13 @@ class AuthControllerTest extends TestCase
         // Assert
         $response
             ->assertStatus(201)
-            ->assertJsonStructure(['success', 'user', 'token'])
-            ->assertJson(['success' => true]);
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('message', 'Cadastro realizado com sucesso.')
+            ->assertJsonStructure(['success', 'message', 'data' => ['user', 'token']]);
 
         $this->assertDatabaseHas('users', [
             'name' => 'User Test',
-            'email' => 'user@email.com'
+            'email' => 'user@email.com',
         ]);
     }
 
@@ -43,10 +45,10 @@ class AuthControllerTest extends TestCase
         User::factory()->create(['email' => 'existing@email.com']);
 
         $data = [
-            "name" => "User Test",
-            "email" => "existing@email.com",
-            "password" => "password123",
-            "password_confirmation" => "password123"
+            'name' => 'User Test',
+            'email' => 'existing@email.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
         ];
 
         // Act
@@ -62,9 +64,9 @@ class AuthControllerTest extends TestCase
     {
         // Arrange
         $data = [
-            "email" => "user@email.com",
-            "password" => "password123",
-            "password_confirmation" => "password123"
+            'email' => 'user@email.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
         ];
 
         // Act
@@ -80,9 +82,9 @@ class AuthControllerTest extends TestCase
     {
         // Arrange
         $data = [
-            "name" => "User Test",
-            "password" => "password123",
-            "password_confirmation" => "password123"
+            'name' => 'User Test',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
         ];
 
         // Act
@@ -98,10 +100,10 @@ class AuthControllerTest extends TestCase
     {
         // Arrange
         $data = [
-            "name" => "User Test",
-            "email" => "invalid-email",
-            "password" => "password123",
-            "password_confirmation" => "password123"
+            'name' => 'User Test',
+            'email' => 'invalid-email',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
         ];
 
         // Act
@@ -117,8 +119,8 @@ class AuthControllerTest extends TestCase
     {
         // Arrange
         $data = [
-            "name" => "User Test",
-            "email" => "user@email.com"
+            'name' => 'User Test',
+            'email' => 'user@email.com',
         ];
 
         // Act
@@ -134,10 +136,10 @@ class AuthControllerTest extends TestCase
     {
         // Arrange
         $data = [
-            "name" => "User Test",
-            "email" => "user@email.com",
-            "password" => "password123",
-            "password_confirmation" => "different123"
+            'name' => 'User Test',
+            'email' => 'user@email.com',
+            'password' => 'password123',
+            'password_confirmation' => 'different123',
         ];
 
         // Act
@@ -153,10 +155,10 @@ class AuthControllerTest extends TestCase
     {
         // Arrange
         $data = [
-            "name" => "User Test",
-            "email" => "user@email.com",
-            "password" => "short",
-            "password_confirmation" => "short"
+            'name' => 'User Test',
+            'email' => 'user@email.com',
+            'password' => 'short',
+            'password_confirmation' => 'short',
         ];
 
         // Act
@@ -173,75 +175,80 @@ class AuthControllerTest extends TestCase
     public function test_user_can_login_with_valid_credentials(): void
     {
         // Arrange
-        $password = "password123";
+        $password = 'password123';
         User::factory()->create([
-            "email" => "user@email.com",
-            "password" => $password
+            'email' => 'user@email.com',
+            'password' => $password,
         ]);
 
         $data = [
-            "email" => "user@email.com",
-            "password" => $password
+            'email' => 'user@email.com',
+            'password' => $password,
         ];
 
         // Act
-        $response = $this->postJson("/api/auth/login", $data);
+        $response = $this->postJson('/api/auth/login', $data);
 
         // Assert
         $response
             ->assertStatus(200)
-            ->assertJsonStructure(['success', 'token'])
-            ->assertJson(['success' => true]);
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('message', 'Login realizado com sucesso.')
+            ->assertJsonStructure(['success', 'message', 'data' => ['token']]);
     }
 
     public function test_login_fails_with_wrong_password(): void
     {
         // Arrange
         User::factory()->create([
-            "email" => "user@email.com",
-            "password" => "password123"
+            'email' => 'user@email.com',
+            'password' => 'password123',
         ]);
 
         $data = [
-            "email" => "user@email.com",
-            "password" => "wrongpassword"
+            'email' => 'user@email.com',
+            'password' => 'wrongpassword',
         ];
 
         // Act
-        $response = $this->postJson("/api/auth/login", $data);
+        $response = $this->postJson('/api/auth/login', $data);
 
         // Assert
         $response
             ->assertStatus(401)
-            ->assertJson(['success' => false]);
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'Credenciais inválidas.')
+            ->assertJsonPath('data', null);
     }
 
     public function test_login_fails_with_nonexistent_email(): void
     {
         // Arrange
         $data = [
-            "email" => "nonexistent@email.com",
-            "password" => "password123"
+            'email' => 'nonexistent@email.com',
+            'password' => 'password123',
         ];
 
         // Act
-        $response = $this->postJson("/api/auth/login", $data);
+        $response = $this->postJson('/api/auth/login', $data);
 
         // Assert
         $response
             ->assertStatus(401)
-            ->assertJson(['success' => false]);
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'Credenciais inválidas.')
+            ->assertJsonPath('data', null);
     }
 
     public function test_login_fails_without_email(): void
     {
         // Arrange
         $data = [
-            "password" => "password123"
+            'password' => 'password123',
         ];
 
         // Act
-        $response = $this->postJson("/api/auth/login", $data);
+        $response = $this->postJson('/api/auth/login', $data);
 
         // Assert
         $response
@@ -253,11 +260,11 @@ class AuthControllerTest extends TestCase
     {
         // Arrange
         $data = [
-            "email" => "user@email.com"
+            'email' => 'user@email.com',
         ];
 
         // Act
-        $response = $this->postJson("/api/auth/login", $data);
+        $response = $this->postJson('/api/auth/login', $data);
 
         // Assert
         $response
@@ -277,16 +284,18 @@ class AuthControllerTest extends TestCase
         $token = $user->createToken('test')->plainTextToken;
 
         // Act
-        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
             ->getJson('/api/user');
 
         // Assert
         $response
             ->assertOk()
-            ->assertJsonPath('id', $user->id)
-            ->assertJsonPath('name', 'User Test')
-            ->assertJsonPath('email', 'user@email.com')
-            ->assertJsonMissingPath('password');
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('message', null)
+            ->assertJsonPath('data.id', $user->id)
+            ->assertJsonPath('data.name', 'User Test')
+            ->assertJsonPath('data.email', 'user@email.com')
+            ->assertJsonMissingPath('data.password');
     }
 
     public function test_user_endpoint_fails_without_token(): void
@@ -308,13 +317,15 @@ class AuthControllerTest extends TestCase
         $token = $user->createToken('test')->plainTextToken;
 
         // Act
-        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
             ->postJson('/api/auth/logout');
 
         // Assert
         $response
             ->assertStatus(200)
-            ->assertJson(['success' => true]);
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('message', 'Logout realizado com sucesso.')
+            ->assertJsonPath('data', null);
 
         $this->assertDatabaseCount('personal_access_tokens', 0);
     }
@@ -326,13 +337,13 @@ class AuthControllerTest extends TestCase
         $token = $user->createToken('test')->plainTextToken;
 
         // Act
-        $this->withHeader('Authorization', 'Bearer ' . $token)
+        $this->withHeader('Authorization', 'Bearer '.$token)
             ->postJson('/api/auth/logout')
             ->assertOk();
 
-        $this->refreshApplication();
+        Auth::forgetGuards();
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
             ->getJson('/api/user');
 
         // Assert

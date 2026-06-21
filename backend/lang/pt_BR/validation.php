@@ -1,0 +1,47 @@
+<?php
+
+return [
+    'array' => 'O campo :attribute deve ser uma lista.',
+    'boolean' => 'O campo :attribute deve ser verdadeiro ou falso.',
+    'confirmed' => 'A confirmação do campo :attribute não confere.',
+    'distinct' => 'O campo :attribute possui um valor duplicado.',
+    'email' => 'O campo :attribute deve ser um endereço de e-mail válido.',
+    'exists' => 'O :attribute selecionado é inválido.',
+    'integer' => 'O campo :attribute deve ser um número inteiro.',
+    'max' => [
+        'array' => 'O campo :attribute não pode ter mais que :max itens.',
+        'file' => 'O campo :attribute não pode ter mais que :max kilobytes.',
+        'numeric' => 'O campo :attribute não pode ser maior que :max.',
+        'string' => 'O campo :attribute não pode ter mais que :max caracteres.',
+    ],
+    'min' => [
+        'array' => 'O campo :attribute deve ter pelo menos :min itens.',
+        'file' => 'O campo :attribute deve ter pelo menos :min kilobytes.',
+        'numeric' => 'O campo :attribute deve ser pelo menos :min.',
+        'string' => 'O campo :attribute deve ter pelo menos :min caracteres.',
+    ],
+    'numeric' => 'O campo :attribute deve ser um número.',
+    'required' => 'O campo :attribute é obrigatório.',
+    'string' => 'O campo :attribute deve ser um texto.',
+    'unique' => 'O valor informado para :attribute já está em uso.',
+
+    'attributes' => [
+        'code' => 'código',
+        'email' => 'e-mail',
+        'extra' => 'item avulso',
+        'ids' => 'setores',
+        'items' => 'itens',
+        'items.*.extra' => 'item avulso',
+        'items.*.price' => 'preço',
+        'items.*.product_name' => 'produto',
+        'items.*.quantity' => 'quantidade',
+        'items.*.sector_snapshot_id' => 'setor',
+        'name' => 'nome',
+        'password' => 'senha',
+        'price' => 'preço',
+        'product_name' => 'produto',
+        'quantity' => 'quantidade',
+        'sector_snapshot_id' => 'setor',
+        'template_id' => 'template',
+    ],
+];

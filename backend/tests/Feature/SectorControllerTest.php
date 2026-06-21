@@ -140,7 +140,11 @@ class SectorControllerTest extends TestCase
             ->actingAs($user)
             ->deleteJson("/api/templates/{$template->id}/sectors/{$sector->id}");
 
-        $response->assertNoContent();
+        $response
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('message', 'Setor removido com sucesso.')
+            ->assertJsonPath('data', null);
 
         $this->assertDatabaseMissing('sectors', ['id' => $sector->id]);
         $this->assertDatabaseMissing('products', ['id' => $product->id]);
@@ -177,12 +181,15 @@ class SectorControllerTest extends TestCase
 
         $response
             ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('message', 'Setores reordenados com sucesso.')
             ->assertJsonPath('data.0.id', $checkout->id)
             ->assertJsonPath('data.0.order', 1)
             ->assertJsonPath('data.1.id', $produce->id)
             ->assertJsonPath('data.1.order', 2)
             ->assertJsonPath('data.2.id', $bakery->id)
-            ->assertJsonPath('data.2.order', 3);
+            ->assertJsonPath('data.2.order', 3)
+            ->assertJsonMissingPath('data.0.products');
 
         $this->assertDatabaseHas('sectors', ['id' => $checkout->id, 'order' => 1]);
         $this->assertDatabaseHas('sectors', ['id' => $produce->id, 'order' => 2]);

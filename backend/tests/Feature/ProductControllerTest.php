@@ -151,7 +151,11 @@ class ProductControllerTest extends TestCase
             ->actingAs($user)
             ->deleteJson("/api/templates/{$template->id}/sectors/{$sector->id}/products/{$product->id}");
 
-        $response->assertNoContent();
+        $response
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('message', 'Produto removido com sucesso.')
+            ->assertJsonPath('data', null);
 
         $this->assertDatabaseMissing('products', ['id' => $product->id]);
     }
@@ -294,7 +298,9 @@ class ProductControllerTest extends TestCase
         $this
             ->actingAs($user)
             ->deleteJson("/api/templates/{$template->id}/sectors/{$sector->id}/products/{$product->id}")
-            ->assertNoContent();
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data', null);
 
         $persistedSnapshot = DB::table('shopping_sessions')->value('snapshot');
 

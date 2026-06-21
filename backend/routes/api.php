@@ -6,13 +6,14 @@ use App\Http\Controllers\SectorController;
 use App\Http\Controllers\SharedTemplateController;
 use App\Http\Controllers\ShoppingSessionController;
 use App\Http\Controllers\TemplateController;
+use App\Support\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['throttle:global', 'auth:sanctum'])->group(function () {
     Route::get('/user', function (Request $request) {
         // essa rota é usada nos testes de authentication, portanto nao pode ser apagada
-        return $request->user();
+        return ApiResponse::success($request->user());
     });
     Route::scopeBindings()->group(function (): void {
         Route::get('shopping-sessions/current', [ShoppingSessionController::class, 'current']);

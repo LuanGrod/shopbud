@@ -2,9 +2,10 @@
 
 namespace App\Providers;
 
+use App\Support\ApiResponse;
 use Illuminate\Cache\RateLimiting\Limit;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -23,25 +24,27 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        RateLimiter::for("global", function (Request $request) {
+        $tooManyRequestsResponse = function (Request $request, array $headers): JsonResponse {
+            return ApiResponse::error('Muitas tentativas. Aguarde um pouco antes de tentar novamente.', 429, [
+                'retry_after_seconds' => (int) $headers['Retry-After'],
+            ], $headers);
+        };
+
+        RateLimiter::for('global', function (Request $request) {
             return Limit::perMinute(60)
                 ->by($request->user()?->id ?: $request->ip())
                 ->response(
-                    function (Request $request, array $headers) {
-                        $retryAfter = $headers["Retry-After"];
-                        return response()
-                            ->json([
-                                "success" => false,
-                                "msg" => "Você excedeu o limite de requisições, tente novamente mais tarde.",
-                                "retry_after_seconds" => $retryAfter
-                            ], 429, $headers);
-                    }
+                    function (Request $request, array $headers): JsonResponse {
+                        return ApiResponse::error('Muitas requisições. Aguarde um pouco antes de tentar novamente.', 429, [
+                            'retry_after_seconds' => (int) $headers['Retry-After'],
+                        ], $headers);
+                    },
                 );
         });
-        RateLimiter::for("login", function (Request $request) {
+        RateLimiter::for('login', function (Request $request) use ($tooManyRequestsResponse) {
             return [
-                Limit::perMinute(10),
-                Limit::perMinute(3)->by($request->input("email"))
+                Limit::perMinute(10)->response($tooManyRequestsResponse),
+                Limit::perMinute(3)->by($request->input('email'))->response($tooManyRequestsResponse),
             ];
         });
     }

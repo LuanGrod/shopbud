@@ -154,7 +154,7 @@ class ShoppingSessionControllerTest extends TestCase
         ]);
     }
 
-    public function test_current_session_returns_no_content_when_user_has_no_unexpired_active_session(): void
+    public function test_current_session_returns_null_data_when_user_has_no_unexpired_active_session(): void
     {
         $user = User::factory()->create();
 
@@ -167,7 +167,10 @@ class ShoppingSessionControllerTest extends TestCase
         $this
             ->actingAs($user)
             ->getJson('/api/shopping-sessions/current')
-            ->assertNoContent();
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('message', 'Nenhuma compra ativa encontrada.')
+            ->assertJsonPath('data', null);
 
         $this->assertDatabaseHas('shopping_sessions', [
             'id' => $expiredSession->id,

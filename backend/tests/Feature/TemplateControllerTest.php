@@ -38,6 +38,8 @@ class TemplateControllerTest extends TestCase
 
         $response
             ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('message', null)
             ->assertJsonPath('data.0', [
                 'id' => $newerTemplate->id,
                 'name' => 'Newer Market',
@@ -47,6 +49,8 @@ class TemplateControllerTest extends TestCase
                 'name' => 'Older Market',
             ])
             ->assertJsonMissing(['name' => 'Other User Market']);
+
+        $response->assertJsonStructure(['success', 'message', 'data', 'links', 'meta']);
 
         $this->assertSame(
             ['id', 'name'],
@@ -84,7 +88,9 @@ class TemplateControllerTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonPath('name', 'Central Market');
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('message', 'Template criado com sucesso.')
+            ->assertJsonPath('data.name', 'Central Market');
 
         $duplicateResponse = $this
             ->actingAs($user)
@@ -226,7 +232,11 @@ class TemplateControllerTest extends TestCase
             ->actingAs($user)
             ->deleteJson("/api/templates/{$template->id}");
 
-        $response->assertNoContent();
+        $response
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('message', 'Template removido com sucesso.')
+            ->assertJsonPath('data', null);
 
         $this->assertDatabaseMissing('templates', ['id' => $template->id]);
         $this->assertDatabaseMissing('sectors', ['id' => $sector->id]);

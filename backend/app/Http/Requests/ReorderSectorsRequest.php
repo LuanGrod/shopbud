@@ -50,7 +50,7 @@ class ReorderSectorsRequest extends FormRequest
                     ->all();
 
                 if ($submittedIds !== $expectedIds) {
-                    $validator->errors()->add('ids', 'The ids must include every sector from this template and no other sectors.');
+                    $validator->errors()->add('ids', 'A lista de setores deve incluir todos os setores deste template e nenhum setor de outro template.');
                 }
             },
         ];

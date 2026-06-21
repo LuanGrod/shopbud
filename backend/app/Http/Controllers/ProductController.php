@@ -8,9 +8,9 @@ use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Models\Sector;
 use App\Models\Template;
+use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Http\Response;
 
 class ProductController extends Controller
 {
@@ -21,7 +21,8 @@ class ProductController extends Controller
     {
         $this->authorize('viewAny', [Product::class, $sector]);
 
-        return ProductResource::collection($sector->products()->get());
+        return ProductResource::collection($sector->products()->get())
+            ->additional(ApiResponse::resourceMeta());
     }
 
     /**
@@ -33,7 +34,10 @@ class ProductController extends Controller
 
         $product = $sector->products()->create($request->validated());
 
-        return (new ProductResource($product))->response()->setStatusCode(201);
+        return (new ProductResource($product))
+            ->additional(ApiResponse::resourceMeta('Produto criado com sucesso.'))
+            ->response()
+            ->setStatusCode(201);
     }
 
     /**
@@ -45,18 +49,19 @@ class ProductController extends Controller
 
         $product->update($request->validated());
 
-        return new ProductResource($product);
+        return (new ProductResource($product))
+            ->additional(ApiResponse::resourceMeta('Produto atualizado com sucesso.'));
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Template $template, Sector $sector, Product $product): Response
+    public function destroy(Template $template, Sector $sector, Product $product): JsonResponse
     {
         $this->authorize('delete', $product);
 
         $product->delete();
 
-        return response()->noContent();
+        return ApiResponse::success(message: 'Produto removido com sucesso.');
     }
 }
