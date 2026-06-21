@@ -8,7 +8,7 @@
     --border: #eadfce;
     --muted: #f2f2f2;
     --muted-foreground: #667461;
-    --primary: rgb(46, 125, 50);
+    --primary: #2e7d32;
     --primary-foreground: #fff7ec;
     --secondary: #e7f0e3;
     --secondary-foreground: #2e7d32;
@@ -47,13 +47,15 @@
     --color-destructive: var(--destructive);
     --color-destructive-foreground: var(--destructive-foreground);
     --color-ring: var(--ring);
+    --font-brand: var(--font-baloo-2);
     --font-baloo: var(--font-baloo-2);
-    --font-sans: var(--font-baloo-2);
-    --font-mono: var(--font-geist-mono);
+    --font-heading: var(--font-sf-pro-display);
+    --font-display: var(--font-sf-pro-display);
+    --font-sans: var(--font-sf-pro-text);
 }
 
 body {
     background: var(--background);
     color: var(--foreground);
-    font-family: var(--font-baloo-2), Arial, Helvetica, sans-serif;
+    font-family: var(--font-sf-pro-text), Arial, Helvetica, sans-serif;
 }
