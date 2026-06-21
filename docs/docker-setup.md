@@ -150,7 +150,7 @@ shopbud/
 | `volumes` | `./frontend:/app` | **SYNC**: Seu código → container |
 | `volumes` | `frontend_node_modules:/app/node_modules` | **PERSISTE**: node_modules |
 | `volumes` | `/app/.next` | **EXCLUI**: .next é rebuildado (tmp) |
-| `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | URL que o navegador usa |
+| `SHOPBUD_API_URL` | `http://backend:8000` | URL interna que o Next.js usa para chamar a API Laravel |
 
 **Nota**: `/app/.next` sem nome antes dos dois pontos significa volume anônimo descartável. O Next.js rebuild o `.next` sempre.
 
