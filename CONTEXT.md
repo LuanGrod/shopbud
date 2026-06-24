@@ -31,3 +31,7 @@ _Avoid_: Live template data, reference
 **Shared Template**:
 A temporary shared access to a Template's snapshot, valid only while the original Template remains available.
 _Avoid_: Shopping Session, public template
+
+**Initial Onboarding**:
+A first-visit introduction shown before authentication to explain the Shopbud flow on a browser or device that has not seen or skipped it yet.
+_Avoid_: Splash screen, tutorial, walkthrough

@@ -17,6 +17,14 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
 import { AuthField } from "./field";
+import {
+    EnvelopeSimpleIcon,
+    KeyholeIcon,
+    LockKeyIcon,
+    UserCirclePlusIcon,
+    UserIcon,
+    type Icon,
+} from "@phosphor-icons/react";
 
 type AuthFormProps = {
     initialMode?: AuthMode;
@@ -27,6 +35,7 @@ type AuthFieldConfig = {
     name: AuthFieldName;
     type: string;
     autoComplete: string;
+    icon: Icon;
 };
 
 const fieldsByMode = {
@@ -36,33 +45,44 @@ const fieldsByMode = {
             name: "email",
             type: "email",
             autoComplete: "email",
+            icon: EnvelopeSimpleIcon,
         },
         {
             label: "Senha",
             name: "password",
             type: "password",
             autoComplete: "current-password",
+            icon: LockKeyIcon,
         },
     ],
     register: [
-        { label: "Nome", name: "name", type: "text", autoComplete: "name" },
+        {
+            label: "Nome",
+            name: "name",
+            type: "text",
+            autoComplete: "name",
+            icon: UserIcon,
+        },
         {
             label: "E-mail",
             name: "email",
             type: "email",
             autoComplete: "email",
+            icon: EnvelopeSimpleIcon,
         },
         {
             label: "Senha",
             name: "password",
             type: "password",
             autoComplete: "new-password",
+            icon: LockKeyIcon,
         },
         {
             label: "Confirmar senha",
             name: "password_confirmation",
             type: "password",
             autoComplete: "new-password",
+            icon: LockKeyIcon,
         },
     ],
 } satisfies Record<AuthMode, AuthFieldConfig[]>;
@@ -151,37 +171,47 @@ export function AuthForm({ initialMode = "login" }: AuthFormProps) {
                 </p>
             </div>
 
-            <div className="grid min-h-14 grid-cols-2 rounded-full bg-surface p-1 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+            <div className="grid min-h-14 grid-cols-2 rounded-full bg-surface p-1 shadow-md">
                 <button
                     type="button"
                     onClick={() => selectMode("login")}
-                    className={`rounded-full text-sm font-semibold transition ${
+                    className={`flex justify-center items-center gap-2 rounded-full text-sm font-semibold transition ${
                         mode === "login"
-                            ? "bg-accent text-accent-foreground shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
+                            ? "bg-primary text-primary-foreground shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
                             : "text-foreground"
                     }`}
                 >
+                    <KeyholeIcon size={32} />
                     Entrar
                 </button>
                 <button
                     type="button"
                     onClick={() => selectMode("register")}
-                    className={`rounded-full text-sm font-semibold transition ${
+                    className={`flex justify-center items-center gap-2 rounded-full text-sm font-semibold transition ${
                         mode === "register"
-                            ? "bg-accent text-accent-foreground shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
+                            ? "bg-primary text-primary-foreground shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
                             : "text-foreground"
                     }`}
                 >
+                    <UserCirclePlusIcon size={32} />
                     Criar conta
                 </button>
             </div>
 
             {fieldsByMode[mode].map((field) => (
-                <AuthField
-                    key={field.name}
-                    {...field}
-                    error={fieldErrors[field.name]}
-                />
+                <div key={field.name}>
+                    <AuthField {...field} error={fieldErrors[field.name]} />
+                    {mode === "login" && field.name === "password" ? (
+                        <div className="mt-2 text-right">
+                            <a
+                                href="#"
+                                className="text-sm font-semibold text-primary transition hover:text-foreground"
+                            >
+                                Esqueci minha senha
+                            </a>
+                        </div>
+                    ) : null}
+                </div>
             ))}
 
             <button

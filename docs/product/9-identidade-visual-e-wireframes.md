@@ -158,7 +158,7 @@ Esta seção define contratos de uso. Os detalhes finais de espaçamento, sombra
 - O item ativo deve usar `text-primary`; itens inativos usam `text-muted-foreground`.
 - Compra pode ter destaque visual como ação central, por ser o fluxo principal do app.
 - Aparece nas telas principais autenticadas, dentro do app shell mobile.
-- Não aparece em splash, login, cadastro, modais, bottom sheets ou fluxos focados.
+- Não aparece no onboarding inicial, login, cadastro, modais, bottom sheets ou fluxos focados.
 - No desktop, continua dentro da largura fixa do app shell e não vira sidebar.
 
 **FAB**
@@ -194,11 +194,18 @@ Esta seção define contratos de uso. Os detalhes finais de espaçamento, sombra
 
 ### 9.4 Descrição das Telas
 
-**T-001: Splash Screen**
+**T-001: Onboarding Inicial**
 
-- Fundo: Verde Folha (`bg-primary`, `#2E7D32`)
-- Logo ShopBud centralizado em Ivory Quente (`#FFF7EC`)
-- Tagline abaixo: "Seu companheiro de compras"
+- Função: apresentar o valor central do ShopBud antes da autenticação, apenas para navegadores ou dispositivos que ainda não viram ou pularam o onboarding.
+- Comportamento: fluxo avançável em 4 etapas, com dots clicáveis e gesto horizontal para avançar ou voltar.
+- O fluxo tem início e fim fixos, sem loop entre a última e a primeira etapa.
+- Ao concluir em "Começar" ou ao tocar em "Pular", o onboarding é considerado visto no navegador/dispositivo e o usuário segue para o login.
+- Acesso direto a `/login` deve ser respeitado, sem forçar o onboarding.
+- Não exibir Bottom Navigation nesta tela.
+- Etapa 1: "Compre sem esquecer nada" — o usuário usa a lista no mercado e marca os produtos enquanto coloca tudo na cesta.
+- Etapa 2: "Crie listas que você reutiliza" — o usuário monta templates para mercados favoritos, com os produtos que compra sempre.
+- Etapa 3: "Siga a ordem dos setores" — os setores refletem o caminho real do supermercado, evitando voltas pelos corredores.
+- Etapa 4: "Controle o total da compra" — o usuário informa preços e quantidades para acompanhar gastos e salvar o resumo no histórico.
 
 ---
 
@@ -446,7 +453,7 @@ Esta seção define contratos de uso. Os detalhes finais de espaçamento, sombra
 
 ### 9.5 Fluxo de Navegação
 
-`Splash → Login/Cadastro → Home (Dashboard)
+`Onboarding Inicial → Login/Cadastro → Home (Dashboard)
 │
 ├── Templates/Setores/Produtos → Criar/Editar/Excluir (popups)
 │
